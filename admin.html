@@ -1,0 +1,433 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin | Grupo Consultor C&C</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy: #0A2342;
+      --green: #8CC63F;
+      --cyan: #00B4D8;
+      --light: #F4F7F9;
+      --white: #FFFFFF;
+      --text: #263445;
+      --muted: #65758B;
+      --danger: #D62828;
+      --shadow: 0 18px 45px rgba(10, 35, 66, 0.12);
+      --radius: 24px;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Poppins', sans-serif; color: var(--text); background: var(--light); }
+    .layout { min-height: 100vh; display: grid; grid-template-columns: 290px 1fr; }
+    .sidebar { background: linear-gradient(180deg, var(--navy), #092B52); color: var(--white); padding: 30px; position: sticky; top: 0; height: 100vh; }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 1.25rem; margin-bottom: 38px; }
+    .brand-mark { width: 46px; height: 46px; border-radius: 16px; display: grid; place-items: center; background: linear-gradient(135deg, var(--cyan), var(--green)); color: var(--navy); }
+    .menu { display: grid; gap: 12px; }
+    .menu a, .menu span { display: block; padding: 14px 16px; border-radius: 16px; color: rgba(255,255,255,.82); background: rgba(255,255,255,.08); }
+    .menu .active { color: var(--navy); background: var(--green); font-weight: 800; }
+    .sidebar-note { margin-top: 32px; padding: 18px; border-radius: 18px; background: rgba(255,255,255,.1); color: rgba(255,255,255,.78); line-height: 1.65; font-size: .9rem; }
+    .main { padding: 34px; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 18px; margin-bottom: 28px; }
+    h1 { color: var(--navy); font-size: clamp(1.8rem, 4vw, 3rem); margin: 0; letter-spacing: -1px; }
+    .topbar p { color: var(--muted); margin: 8px 0 0; }
+    .btn { display: inline-flex; justify-content: center; align-items: center; gap: 10px; border: 0; border-radius: 999px; padding: 14px 22px; font: inherit; font-weight: 800; cursor: pointer; transition: transform .2s ease, box-shadow .2s ease; }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(140,198,63,0.32); }
+    .btn-green { background: var(--green); color: var(--navy); }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 22px; }
+    .card { background: var(--white); border-radius: var(--radius); padding: 26px; box-shadow: var(--shadow); border: 1px solid rgba(10,35,66,.06); }
+    .card.full { grid-column: 1 / -1; }
+    .card h2 { color: var(--navy); margin: 0 0 8px; }
+    .card p { color: var(--muted); line-height: 1.65; margin: 0 0 22px; }
+    .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 18px; }
+    label { display: grid; gap: 8px; color: var(--navy); font-weight: 700; font-size: .92rem; }
+    input { width: 100%; border: 1px solid #D9E2EC; border-radius: 16px; padding: 14px 15px; font: inherit; color: var(--text); background: #fff; outline: none; }
+    input:focus { border-color: var(--cyan); box-shadow: 0 0 0 4px rgba(0,180,216,.12); }
+    .actions { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 24px; padding-top: 22px; border-top: 1px solid #E8EEF4; }
+    .status { min-height: 28px; font-weight: 700; color: var(--muted); }
+    .status.ok { color: #2F7D32; }
+    .status.error { color: var(--danger); }
+    .badge { display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 999px; color: var(--navy); background: rgba(0,180,216,.12); font-weight: 800; }
+    .social-card { background: linear-gradient(135deg, #ffffff, #f8fcff); }
+    .reviews-panel { margin-top: 28px; }
+    .reviews-panel h2 { color: var(--navy); margin: 0 0 6px; }
+    .reviews-panel > p { color: var(--muted); margin: 0 0 22px; }
+    .reviews-list-admin { display: grid; gap: 14px; }
+    .review-admin-item { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: start; padding: 18px; border-radius: 20px; background: #F8FAFC; border: 1px solid #E3EEF7; }
+    .ra-avatar { width: 46px; height: 46px; border-radius: 999px; display: grid; place-items: center; font-weight: 900; font-size: 1.1rem; color: var(--white); background: linear-gradient(135deg, var(--cyan), var(--navy)); flex-shrink: 0; }
+    .ra-name { font-weight: 800; color: var(--navy); }
+    .ra-date { font-size: .82rem; color: var(--muted); }
+    .ra-stars { color: #F4A028; font-size: 1rem; letter-spacing: 2px; }
+    .ra-text { color: var(--text); line-height: 1.6; margin: 4px 0 0; }
+    .btn-danger { background: rgba(214,40,40,.1); color: var(--danger); border: 1px solid rgba(214,40,40,.22); border-radius: 999px; padding: 8px 14px; font: inherit; font-weight: 800; cursor: pointer; white-space: nowrap; font-size: .85rem; transition: background .2s ease; }
+    .btn-danger:hover { background: var(--danger); color: #fff; }
+    .no-reviews-admin { text-align: center; padding: 32px; color: var(--muted); }
+    .img-uploader { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .img-upload-box { border: 2px dashed #C8D9EA; border-radius: 22px; padding: 24px; text-align: center; transition: border-color .2s ease, background .2s ease; cursor: pointer; position: relative; }
+    .img-upload-box:hover { border-color: var(--cyan); background: rgba(0,180,216,.04); }
+    .img-upload-box input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .img-preview { max-width: 100%; max-height: 200px; width: auto; height: auto; border-radius: 16px; margin: 0 auto 14px; display: block; object-fit: contain; border: 1px solid #E3EEF7; background: #f8fafc; }
+    .img-preview.empty { display: none; }
+    .img-placeholder { font-size: 2.8rem; margin-bottom: 10px; }
+    .img-upload-label { font-weight: 800; color: var(--navy); display: block; margin-bottom: 4px; }
+    .img-upload-hint { color: var(--muted); font-size: .88rem; }
+    .img-upload-btn { margin-top: 14px; display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; background: linear-gradient(135deg,var(--green),var(--cyan)); color: var(--navy); border-radius: 999px; font-weight: 800; font-size: .88rem; border: none; cursor: pointer; transition: transform .2s ease; }
+    .img-upload-btn:hover { transform: translateY(-2px); }
+    .img-status { margin-top: 8px; font-size: .85rem; font-weight: 700; min-height: 20px; }
+    .img-status.ok { color: #2F7D32; } .img-status.error { color: var(--danger); }
+    @media (max-width: 700px) { .img-uploader { grid-template-columns: 1fr; } }
+    @media (max-width: 980px) { .layout { grid-template-columns: 1fr; } .sidebar { position: relative; height: auto; } .grid, .form-grid { grid-template-columns: 1fr; } .topbar, .actions { align-items: stretch; flex-direction: column; } .btn { width: 100%; } }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark">C&C</span><span>Grupo Consultor C&C</span></div>
+      <nav class="menu" aria-label="Panel de administración">
+        <span class="active">Configuración de Nómina</span>
+        <a href="cyc.html" target="_blank" rel="noopener">Ver calculadora pública</a>
+      </nav>
+      <div class="sidebar-note">Actualiza las variables que consume la calculadora pública. Los cambios se guardan en Firebase Firestore en <strong>settings/payroll</strong>.</div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <span class="badge">Dashboard interno</span>
+          <h1>Configuración de Seguridad Social</h1>
+          <p>Administra SMMLV, porcentajes y costo de administración de Grupo Consultor C&C.</p>
+        </div>
+        <button class="btn btn-green" id="saveTop">Guardar Configuración</button>
+      </div>
+
+      <form id="settingsForm">
+        <div class="grid">
+          <section class="card full">
+            <h2>Valores Generales</h2>
+            <p>Define el salario mínimo vigente y el costo de administración que se suma en el cálculo empresarial.</p>
+            <div class="form-grid">
+              <label>SMMLV
+                <input id="smmlv" type="number" min="0" step="1" value="1750905" required />
+              </label>
+              <label>Administración Grupo Consultor C&C
+                <input id="adminFee" type="number" min="0" step="1" value="0" required />
+              </label>
+            </div>
+          </section>
+
+          <section class="card">
+            <h2>Porcentajes Independientes</h2>
+            <p>Estos porcentajes se aplican sobre el IBC manual cuando el usuario selecciona “Soy Independiente”.</p>
+            <div class="form-grid">
+              <label>Salud (%)
+                <input id="indHealth" type="number" min="0" step="0.001" value="12.5" required />
+              </label>
+              <label>Pensión (%)
+                <input id="indPension" type="number" min="0" step="0.001" value="16" required />
+              </label>
+              <label>ARL Riesgo I (%)
+                <input id="indArl" type="number" min="0" step="0.001" value="0.522" required />
+              </label>
+              <label>Caja de Compensación (%)
+                <input id="indCompensation" type="number" min="0" step="0.001" value="2" required />
+              </label>
+            </div>
+          </section>
+
+          <section class="card">
+            <h2>Porcentajes Empresas</h2>
+            <p>Incluye exoneración Art. 114-1 ET para salud del empleador, asumiendo salarios menores a 10 SMMLV.</p>
+            <div class="form-grid">
+              <label>Salud Empleado (%)
+                <input id="comHealthEmployee" type="number" min="0" step="0.001" value="4" required />
+              </label>
+              <label>Pensión Empleador (%)
+                <input id="comPensionEmployer" type="number" min="0" step="0.001" value="12" required />
+              </label>
+              <label>Pensión Empleado (%)
+                <input id="comPensionEmployee" type="number" min="0" step="0.001" value="4" required />
+              </label>
+              <label>ARL Empleador (%)
+                <input id="comArlEmployer" type="number" min="0" step="0.001" value="0.522" required />
+              </label>
+              <label>Caja Empleador (%)
+                <input id="comCompensationEmployer" type="number" min="0" step="0.001" value="4" required />
+              </label>
+            </div>
+          </section>
+
+          <section class="card full">
+            <h2>Imágenes del sitio</h2>
+            <p>Sube el logo y la infografía del hero. Se guardan en Firebase y se muestran automáticamente en la página pública. Acepta cualquier formato de imagen.</p>
+            <div class="img-uploader">
+              <div class="img-upload-box" id="logoBox">
+                <input type="file" id="logoFile" accept="image/*" />
+                <img class="img-preview empty" id="logoPreview" alt="Preview logo" />
+                <div class="img-placeholder" id="logoPlaceholder">🏢</div>
+                <span class="img-upload-label">Logo de la empresa</span>
+                <span class="img-upload-hint">PNG, JPG, SVG, WebP — cualquier tamaño</span>
+                <button class="img-upload-btn" id="saveLogoBtn" type="button">Guardar logo</button>
+                <div class="img-status" id="logoStatus"></div>
+              </div>
+              <div class="img-upload-box" id="infografiaBox">
+                <input type="file" id="infografiaFile" accept="image/*" />
+                <img class="img-preview empty" id="infografiaPreview" alt="Preview infografía" />
+                <div class="img-placeholder" id="infografiaPlaceholder">🖼️</div>
+                <span class="img-upload-label">Infografía del hero</span>
+                <span class="img-upload-hint">PNG, JPG, SVG, WebP — cualquier tamaño</span>
+                <button class="img-upload-btn" id="saveInfografiaBtn" type="button">Guardar infografía</button>
+                <div class="img-status" id="infografiaStatus"></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="card full social-card">
+            <h2>Redes Sociales</h2>
+            <p>Configura los enlaces que aparecerán en la landing pública. Si algún campo queda vacío, ese botón no se mostrará.</p>
+            <div class="form-grid">
+              <label>YouTube
+                <input id="socialYoutube" type="url" placeholder="https://www.youtube.com/@tu-canal" />
+              </label>
+              <label>TikTok
+                <input id="socialTiktok" type="url" placeholder="https://www.tiktok.com/@tu-usuario" />
+              </label>
+              <label>Instagram
+                <input id="socialInstagram" type="url" placeholder="https://www.instagram.com/tu-usuario" />
+              </label>
+              <label>Facebook
+                <input id="socialFacebook" type="url" placeholder="https://www.facebook.com/tu-pagina" />
+              </label>
+            </div>
+          </section>
+        </div>
+
+        <div class="actions">
+          <div class="status" id="status">Cargando configuración actual...</div>
+          <button class="btn btn-green" type="submit">Guardar Configuración</button>
+        </div>
+      </form>
+
+      <section class="card reviews-panel">
+        <h2>Reseñas de clientes</h2>
+        <p>Opiniones enviadas desde la página pública. Puedes eliminar las que consideres inadecuadas.</p>
+        <div class="reviews-list-admin" id="reviewsAdmin"><div class="no-reviews-admin">Cargando reseñas...</div></div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js';
+    import { getAnalytics, isSupported } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-analytics.js';
+    import { getFirestore, doc, getDoc, setDoc, serverTimestamp, collection, query, orderBy, getDocs, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: 'AIzaSyCpVmdDTosviTAEnng2zYqzIqQMCurIG8c',
+      authDomain: 'grupocyc-e3de3.firebaseapp.com',
+      projectId: 'grupocyc-e3de3',
+      storageBucket: 'grupocyc-e3de3.firebasestorage.app',
+      messagingSenderId: '435864279886',
+      appId: '1:435864279886:web:e0f72df588ab9f1f711c1f',
+      measurementId: 'G-92B6E2Z2EH'
+    };
+
+    const app = initializeApp(firebaseConfig);
+    isSupported().then((supported) => supported && getAnalytics(app)).catch(() => {});
+    const db = getFirestore(app);
+    const settingsRef = doc(db, 'settings', 'payroll');
+    const $ = (id) => document.getElementById(id);
+
+    function setStatus(message, type = '') {
+      $('status').textContent = message;
+      $('status').className = `status ${type}`;
+    }
+
+    function numberValue(id) {
+      return Number($(id).value) || 0;
+    }
+
+    function textValue(id) {
+      return $(id).value.trim();
+    }
+
+    function formToConfig() {
+      return {
+        smmlv: numberValue('smmlv'),
+        adminFee: numberValue('adminFee'),
+        independent: {
+          health: numberValue('indHealth'),
+          pension: numberValue('indPension'),
+          arl: numberValue('indArl'),
+          compensation: numberValue('indCompensation')
+        },
+        company: {
+          healthEmployee: numberValue('comHealthEmployee'),
+          pensionEmployer: numberValue('comPensionEmployer'),
+          pensionEmployee: numberValue('comPensionEmployee'),
+          arlEmployer: numberValue('comArlEmployer'),
+          compensationEmployer: numberValue('comCompensationEmployer')
+        },
+        social: {
+          youtube: textValue('socialYoutube'),
+          tiktok: textValue('socialTiktok'),
+          instagram: textValue('socialInstagram'),
+          facebook: textValue('socialFacebook')
+        },
+        updatedAt: serverTimestamp()
+      };
+    }
+
+    function fillForm(data) {
+      if (!data) return;
+      $('smmlv').value = data.smmlv ?? 1750905;
+      $('adminFee').value = data.adminFee ?? 0;
+      $('indHealth').value = data.independent?.health ?? 12.5;
+      $('indPension').value = data.independent?.pension ?? 16;
+      $('indArl').value = data.independent?.arl ?? 0.522;
+      $('indCompensation').value = data.independent?.compensation ?? 2;
+      $('comHealthEmployee').value = data.company?.healthEmployee ?? 4;
+      $('comPensionEmployer').value = data.company?.pensionEmployer ?? 12;
+      $('comPensionEmployee').value = data.company?.pensionEmployee ?? 4;
+      $('comArlEmployer').value = data.company?.arlEmployer ?? 0.522;
+      $('comCompensationEmployer').value = data.company?.compensationEmployer ?? 4;
+      $('socialYoutube').value = data.social?.youtube ?? '';
+      $('socialTiktok').value = data.social?.tiktok ?? '';
+      $('socialInstagram').value = data.social?.instagram ?? '';
+      $('socialFacebook').value = data.social?.facebook ?? '';
+    }
+
+    async function loadSettings() {
+      try {
+        const snap = await getDoc(settingsRef);
+        if (snap.exists()) {
+          fillForm(snap.data());
+          setStatus('Configuración actual cargada desde Firebase.', 'ok');
+        } else {
+          setStatus('No existe configuración guardada. Se muestran valores sugeridos.', '');
+        }
+      } catch (error) {
+        setStatus('No fue posible cargar Firebase. Revisa configuración, reglas o conexión.', 'error');
+      }
+    }
+
+    async function saveSettings() {
+      if (!$('settingsForm').reportValidity()) return;
+      setStatus('Guardando configuración...', '');
+      try {
+        await setDoc(settingsRef, formToConfig(), { merge: true });
+        setStatus('Configuración guardada correctamente en Firebase.', 'ok');
+      } catch (error) {
+        setStatus('Error al guardar. Revisa permisos de Firestore y credenciales.', 'error');
+      }
+    }
+
+    $('settingsForm').addEventListener('submit', (event) => {
+      event.preventDefault();
+      saveSettings();
+    });
+    $('saveTop').addEventListener('click', saveSettings);
+    loadSettings();
+
+    // ── GESTOR DE IMÁGENES ──────────────────────────────────────────────────────────
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function setupImageUploader(inputId, previewId, placeholderId, btnId, statusId, firestoreKey) {
+      const input = $(inputId);
+      const preview = $(previewId);
+      const placeholder = $(placeholderId);
+      const btn = $(btnId);
+      const statusEl = $(statusId);
+      let pendingBase64 = null;
+
+      input.addEventListener('change', async () => {
+        const file = input.files?.[0];
+        if (!file) return;
+        pendingBase64 = await fileToBase64(file);
+        preview.src = pendingBase64;
+        preview.classList.remove('empty');
+        placeholder.style.display = 'none';
+        statusEl.textContent = 'Imagen lista para guardar.';
+        statusEl.className = 'img-status';
+      });
+
+      btn.addEventListener('click', async () => {
+        if (!pendingBase64) { statusEl.textContent = 'Selecciona una imagen primero.'; statusEl.className = 'img-status error'; return; }
+        btn.disabled = true;
+        btn.textContent = 'Guardando...';
+        statusEl.textContent = '';
+        try {
+          await setDoc(settingsRef, { [firestoreKey]: pendingBase64 }, { merge: true });
+          statusEl.textContent = 'Imagen guardada en Firebase ✓';
+          statusEl.className = 'img-status ok';
+        } catch {
+          statusEl.textContent = 'Error al guardar. Revisa permisos de Firestore.';
+          statusEl.className = 'img-status error';
+        }
+        btn.disabled = false;
+        btn.textContent = btnId === 'saveLogoBtn' ? 'Guardar logo' : 'Guardar infografía';
+      });
+    }
+
+    async function loadImagePreviews() {
+      try {
+        const snap = await getDoc(settingsRef);
+        if (!snap.exists()) return;
+        const data = snap.data();
+        if (data.logoBase64) {
+          $('logoPreview').src = data.logoBase64;
+          $('logoPreview').classList.remove('empty');
+          $('logoPlaceholder').style.display = 'none';
+        }
+        if (data.infografiaBase64) {
+          $('infografiaPreview').src = data.infografiaBase64;
+          $('infografiaPreview').classList.remove('empty');
+          $('infografiaPlaceholder').style.display = 'none';
+        }
+      } catch {}
+    }
+
+    setupImageUploader('logoFile', 'logoPreview', 'logoPlaceholder', 'saveLogoBtn', 'logoStatus', 'logoBase64');
+    setupImageUploader('infografiaFile', 'infografiaPreview', 'infografiaPlaceholder', 'saveInfografiaBtn', 'infografiaStatus', 'infografiaBase64');
+    loadImagePreviews();
+
+    async function loadAdminReviews() {
+      const container = $('reviewsAdmin');
+      try {
+        const q = query(collection(db, 'reviews'), orderBy('createdAt', 'desc'));
+        const snap = await getDocs(q);
+        if (snap.empty) { container.innerHTML = '<div class="no-reviews-admin">No hay reseñas todavía.</div>'; return; }
+        container.innerHTML = snap.docs.map(d => {
+          const r = d.data();
+          const name = r.name?.trim() || 'Anónimo';
+          const initial = name.charAt(0).toUpperCase();
+          const stars = '★'.repeat(r.stars || 5) + '☆'.repeat(5 - (r.stars || 5));
+          const date = r.createdAt?.toDate ? r.createdAt.toDate().toLocaleDateString('es-CO', { year:'numeric', month:'short', day:'numeric' }) : 'Sin fecha';
+          return `<div class="review-admin-item" id="ri-${d.id}"><div class="ra-avatar">${initial}</div><div><div class="ra-name">${name} <span class="ra-date">&mdash; ${date}</span></div><div class="ra-stars">${stars}</div><p class="ra-text">${r.text || ''}</p></div><button class="btn-danger" onclick="deleteReview('${d.id}')">Eliminar</button></div>`;
+        }).join('');
+      } catch { container.innerHTML = '<div class="no-reviews-admin">No fue posible cargar las reseñas.</div>'; }
+    }
+
+    window.deleteReview = async (id) => {
+      if (!confirm('¿Eliminar esta reseña?')) return;
+      try {
+        await deleteDoc(doc(db, 'reviews', id));
+        document.getElementById(`ri-${id}`)?.remove();
+        if (!$('reviewsAdmin').querySelector('.review-admin-item')) {
+          $('reviewsAdmin').innerHTML = '<div class="no-reviews-admin">No hay reseñas todavía.</div>';
+        }
+      } catch { alert('No fue posible eliminar. Revisa permisos de Firestore.'); }
+    };
+
+    loadAdminReviews();
+  </script>
+</body>
+</html>
