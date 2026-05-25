@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
@@ -139,7 +139,7 @@
     .review-form-card > p { position: relative; color: rgba(255,255,255,.72); margin: 0 0 26px; }
     .stars-selector { display: flex; gap: 10px; margin-bottom: 22px; }
     .star-btn { font-size: 2.2rem; background: none; border: none; cursor: pointer; color: rgba(255,255,255,.3); transition: color .18s ease, transform .18s ease; line-height: 1; padding: 0; }
-    .star-btn.active, .star-btn:hover ~ .star-btn { color: var(--orange); }
+    .star-btn.active { color: var(--orange); }
     .star-btn.active { transform: scale(1.18); }
     .review-inputs { display: grid; gap: 14px; position: relative; }
     .review-inputs input, .review-inputs textarea { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.22); border-radius: 16px; padding: 14px; color: var(--white); font: inherit; outline: none; resize: none; transition: .2s ease; }
@@ -430,6 +430,8 @@
       social: { youtube: '', tiktok: '', instagram: '', facebook: '' }
     };
 
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
     const $ = (id) => document.getElementById(id);
     const fields = ['contributorType', 'monthlyIncome', 'gender', 'age', 'ibc', 'health', 'pension', 'arl', 'arlRisk', 'compensation'].map($);
     const money = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
@@ -455,8 +457,6 @@
 
     async function loadSocialLinks() {
       try {
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
         const snap = await getDoc(doc(db, 'settings', 'payroll'));
         if (snap.exists()) renderSocialLinks({ ...LOCAL_CONFIG.social, ...(snap.data().social || {}) });
       } catch (error) {
@@ -549,36 +549,97 @@
     // ── IMÁGENES DEL SITIO (logo e infografía desde Firebase) ─────────────────────────
     async function loadSiteImages() {
       try {
-        const snap = await getDoc(doc(db, 'settings', 'payroll'));
-        if (!snap.exists()) return;
-        const data = snap.data();
-        if (data.logoBase64) {
+        const [settingsSnap, logoSnap, infografiaSnap] = await Promise.all([
+          getDoc(doc(db, 'settings', 'payroll')),
+          getDoc(doc(db, 'assets', 'logo')),
+          getDoc(doc(db, 'assets', 'infografia'))
+        ]);
+        if (!settingsSnap.exists() && !logoSnap.exists() && !infografiaSnap.exists()) {
+          loadLocalLogo();
+          loadLocalInfografia();
+          return;
+        }
+        const data = settingsSnap.exists() ? settingsSnap.data() : {};
+        const logoBase64 = logoSnap.exists() ? logoSnap.data().imageBase64 : data.logoBase64;
+        const infografiaBase64 = infografiaSnap.exists() ? infografiaSnap.data().imageBase64 : data.infografiaBase64;
+        if (logoBase64) {
           const logoEl = $('siteLogoImg');
           const fallbackEl = $('brandFallback');
-          logoEl.src = data.logoBase64;
+          logoEl.src = logoBase64;
           logoEl.style.display = 'block';
           if (fallbackEl) fallbackEl.style.display = 'none';
           logoEl.onerror = null;
-        }
-        if (data.infografiaBase64) {
+        } else loadLocalLogo();
+        if (infografiaBase64) {
           const imgEl = $('siteInfografiaImg');
           const placeholderEl = $('infografiaPlaceholder');
-          imgEl.src = data.infografiaBase64;
+          imgEl.src = infografiaBase64;
           imgEl.style.display = 'block';
           if (placeholderEl) placeholderEl.style.display = 'none';
-        } else {
-          const fallbackSrc = 'Infografía/infografia.png';
-          const testImg = new Image();
-          testImg.onload = () => {
-            const imgEl = $('siteInfografiaImg');
-            const placeholderEl = $('infografiaPlaceholder');
-            imgEl.src = fallbackSrc;
-            imgEl.style.display = 'block';
-            if (placeholderEl) placeholderEl.style.display = 'none';
-          };
-          testImg.src = fallbackSrc;
-        }
-      } catch {}
+        } else loadLocalInfografia();
+      } catch {
+        loadLocalLogo();
+        loadLocalInfografia();
+      }
+    }
+
+    function loadLocalLogo() {
+      const candidates = [
+        'Logo/logo.png',
+        'Logo/logo.jpg',
+        'Logo/logo.jpeg',
+        'Logo/logo.webp',
+        'Logo/logo.svg',
+        'Logo/Logo.png',
+        'Logo/Logo.jpg',
+        'Logo/Logo.jpeg',
+        'Logo/Logo.webp',
+        'Logo/Logo.svg'
+      ];
+      const tryNext = (index = 0) => {
+        if (index >= candidates.length) return;
+        const testImg = new Image();
+        testImg.onload = () => {
+          const logoEl = $('siteLogoImg');
+          const fallbackEl = $('brandFallback');
+          logoEl.src = candidates[index];
+          logoEl.style.display = 'block';
+          if (fallbackEl) fallbackEl.style.display = 'none';
+          logoEl.onerror = null;
+        };
+        testImg.onerror = () => tryNext(index + 1);
+        testImg.src = candidates[index];
+      };
+      tryNext();
+    }
+
+    function loadLocalInfografia() {
+      const candidates = [
+        'Infografía/infografia.png',
+        'Infografía/infografia.jpg',
+        'Infografía/infografia.jpeg',
+        'Infografía/infografia.webp',
+        'Infografía/infografia.svg',
+        'Infografia/infografia.png',
+        'Infografia/infografia.jpg',
+        'Infografia/infografia.jpeg',
+        'Infografia/infografia.webp',
+        'Infografia/infografia.svg'
+      ];
+      const tryNext = (index = 0) => {
+        if (index >= candidates.length) return;
+        const testImg = new Image();
+        testImg.onload = () => {
+          const imgEl = $('siteInfografiaImg');
+          const placeholderEl = $('infografiaPlaceholder');
+          imgEl.src = candidates[index];
+          imgEl.style.display = 'block';
+          if (placeholderEl) placeholderEl.style.display = 'none';
+        };
+        testImg.onerror = () => tryNext(index + 1);
+        testImg.src = candidates[index];
+      };
+      tryNext();
     }
 
     // ── REDES SOCIALES (tarjetas grandes) ────────────────────────────────────
