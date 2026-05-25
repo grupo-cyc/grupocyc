@@ -66,9 +66,9 @@
     .btn-danger:hover { background: var(--danger); color: #fff; }
     .no-reviews-admin { text-align: center; padding: 32px; color: var(--muted); }
     .img-uploader { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-    .img-upload-box { border: 2px dashed #C8D9EA; border-radius: 22px; padding: 24px; text-align: center; transition: border-color .2s ease, background .2s ease; cursor: pointer; position: relative; }
+    .img-upload-box { border: 2px dashed #C8D9EA; border-radius: 22px; padding: 24px; text-align: center; transition: border-color .2s ease, background .2s ease; position: relative; }
     .img-upload-box:hover { border-color: var(--cyan); background: rgba(0,180,216,.04); }
-    .img-upload-box input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .img-upload-box input[type=file] { margin: 16px auto 4px; max-width: 100%; cursor: pointer; border: 1px solid #D9E2EC; border-radius: 14px; padding: 10px; background: #fff; }
     .img-preview { max-width: 100%; max-height: 200px; width: auto; height: auto; border-radius: 16px; margin: 0 auto 14px; display: block; object-fit: contain; border: 1px solid #E3EEF7; background: #f8fafc; }
     .img-preview.empty { display: none; }
     .img-placeholder { font-size: 2.8rem; margin-bottom: 10px; }
@@ -340,6 +340,32 @@
       });
     }
 
+    function compressImage(file, maxWidth = 1000, maxHeight = 800, quality = 0.72) {
+      return new Promise((resolve, reject) => {
+        if (file.type === 'image/svg+xml') {
+          fileToBase64(file).then(resolve).catch(reject);
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = new Image();
+          img.onload = () => {
+            const scale = Math.min(maxWidth / img.width, maxHeight / img.height, 1);
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.max(1, Math.round(img.width * scale));
+            canvas.height = Math.max(1, Math.round(img.height * scale));
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+          };
+          img.onerror = reject;
+          img.src = reader.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
     function setupImageUploader(inputId, previewId, placeholderId, btnId, statusId, firestoreKey) {
       const input = $(inputId);
       const preview = $(previewId);
@@ -351,12 +377,25 @@
       input.addEventListener('change', async () => {
         const file = input.files?.[0];
         if (!file) return;
-        pendingBase64 = await fileToBase64(file);
-        preview.src = pendingBase64;
-        preview.classList.remove('empty');
-        placeholder.style.display = 'none';
-        statusEl.textContent = 'Imagen lista para guardar.';
+        if (!file.type.startsWith('image/')) {
+          statusEl.textContent = 'El archivo seleccionado no es una imagen.';
+          statusEl.className = 'img-status error';
+          return;
+        }
+        statusEl.textContent = 'Procesando imagen...';
         statusEl.className = 'img-status';
+        try {
+          pendingBase64 = await compressImage(file);
+          preview.src = pendingBase64;
+          preview.classList.remove('empty');
+          placeholder.style.display = 'none';
+          statusEl.textContent = 'Imagen lista para guardar.';
+          statusEl.className = 'img-status ok';
+        } catch {
+          pendingBase64 = null;
+          statusEl.textContent = 'No fue posible leer la imagen.';
+          statusEl.className = 'img-status error';
+        }
       });
 
       btn.addEventListener('click', async () => {
@@ -365,7 +404,7 @@
         btn.textContent = 'Guardando...';
         statusEl.textContent = '';
         try {
-          await setDoc(settingsRef, { [firestoreKey]: pendingBase64 }, { merge: true });
+          await setDoc(doc(db, 'assets', firestoreKey), { imageBase64: pendingBase64, updatedAt: serverTimestamp() }, { merge: true });
           statusEl.textContent = 'Imagen guardada en Firebase ✓';
           statusEl.className = 'img-status ok';
         } catch {
@@ -379,24 +418,29 @@
 
     async function loadImagePreviews() {
       try {
-        const snap = await getDoc(settingsRef);
-        if (!snap.exists()) return;
-        const data = snap.data();
-        if (data.logoBase64) {
-          $('logoPreview').src = data.logoBase64;
+        const [settingsSnap, logoSnap, infografiaSnap] = await Promise.all([
+          getDoc(settingsRef),
+          getDoc(doc(db, 'assets', 'logo')),
+          getDoc(doc(db, 'assets', 'infografia'))
+        ]);
+        const settingsData = settingsSnap.exists() ? settingsSnap.data() : {};
+        const logoBase64 = logoSnap.exists() ? logoSnap.data().imageBase64 : settingsData.logoBase64;
+        const infografiaBase64 = infografiaSnap.exists() ? infografiaSnap.data().imageBase64 : settingsData.infografiaBase64;
+        if (logoBase64) {
+          $('logoPreview').src = logoBase64;
           $('logoPreview').classList.remove('empty');
           $('logoPlaceholder').style.display = 'none';
         }
-        if (data.infografiaBase64) {
-          $('infografiaPreview').src = data.infografiaBase64;
+        if (infografiaBase64) {
+          $('infografiaPreview').src = infografiaBase64;
           $('infografiaPreview').classList.remove('empty');
           $('infografiaPlaceholder').style.display = 'none';
         }
       } catch {}
     }
 
-    setupImageUploader('logoFile', 'logoPreview', 'logoPlaceholder', 'saveLogoBtn', 'logoStatus', 'logoBase64');
-    setupImageUploader('infografiaFile', 'infografiaPreview', 'infografiaPlaceholder', 'saveInfografiaBtn', 'infografiaStatus', 'infografiaBase64');
+    setupImageUploader('logoFile', 'logoPreview', 'logoPlaceholder', 'saveLogoBtn', 'logoStatus', 'logo');
+    setupImageUploader('infografiaFile', 'infografiaPreview', 'infografiaPlaceholder', 'saveInfografiaBtn', 'infografiaStatus', 'infografia');
     loadImagePreviews();
 
     async function loadAdminReviews() {
