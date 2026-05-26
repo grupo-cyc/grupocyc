@@ -4,6 +4,20 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Grupo Consultor C&C | Calculadora de Seguridad Social</title>
+  <meta name="description" content="Grupo Consultor C&C te acompaña en la gestión de seguridad social, nómina y aportes para trabajadores independientes y empresas en Colombia." />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="es_CO" />
+  <meta property="og:site_name" content="Grupo Consultor C&C" />
+  <meta property="og:title" content="Grupo Consultor C&C | Seguridad Social y Nómina en Colombia" />
+  <meta property="og:description" content="Calcula tus aportes de seguridad social y recibe acompañamiento experto para proteger a tus trabajadores, evitar sanciones y gestionar correctamente tu planilla." />
+  <meta property="og:image" content="Logo/Logo%202.jpg" />
+  <meta property="og:image:alt" content="Logo Grupo Consultor C&C" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Grupo Consultor C&C | Seguridad Social y Nómina" />
+  <meta name="twitter:description" content="Acompañamiento experto en seguridad social, nómina y aportes para empresas e independientes en Colombia." />
+  <meta name="twitter:image" content="Logo/Logo%202.jpg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -225,9 +239,6 @@
                   <option value="empresa">Soy Empresa</option>
                 </select>
               </label>
-              <label>Ingreso/Salario Mensual
-                <input id="monthlyIncome" type="number" min="0" step="1000" placeholder="Ej: 2500000" />
-              </label>
               <label>Género
                 <select id="gender">
                   <option value="masculino">Masculino</option>
@@ -238,7 +249,7 @@
                 <input id="age" type="number" min="0" max="120" placeholder="Ej: 35" />
               </label>
               <label>IBC Manual
-                <input id="ibc" type="number" min="1750905" step="1000" placeholder="Base para liquidar" />
+                <input id="ibc" type="text" inputmode="numeric" placeholder="$ 1.750.905" />
               </label>
               <label>Riesgo ARL
                 <select id="arlRisk">
@@ -433,10 +444,11 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const $ = (id) => document.getElementById(id);
-    const fields = ['contributorType', 'monthlyIncome', 'gender', 'age', 'ibc', 'health', 'pension', 'arl', 'arlRisk', 'compensation'].map($);
+    const fields = ['contributorType', 'gender', 'age', 'ibc', 'health', 'pension', 'arl', 'arlRisk', 'compensation'].map($);
     const money = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
 
     function formatMoney(value) { return money.format(Math.round(Number(value) || 0)); }
+    function parseMoney(value) { return Number(String(value || '').replace(/[^\d]/g, '')) || 0; }
     function percentAmount(base, percent) { return (Number(base) || 0) * ((Number(percent) || 0) / 100); }
     function row(label, value, detail = '') { return `<div class="result-row"><div><strong>${label}</strong>${detail ? `<small style="display:block;color:var(--muted);margin-top:3px">${detail}</small>` : ''}</div><strong>${formatMoney(value)}</strong></div>`; }
 
@@ -481,19 +493,17 @@
     function validateIbc() {
       const ibc = $('ibc');
       const smmlv = LOCAL_CONFIG.smmlv;
-      ibc.min = smmlv;
       if (!ibc.value) return;
-      if (Number(ibc.value) < smmlv) {
-        ibc.value = smmlv;
+      if (parseMoney(ibc.value) < smmlv) {
+        ibc.value = formatMoney(smmlv);
         $('configNotice').textContent = `El IBC no puede ser menor al SMMLV base: ${formatMoney(smmlv)}.`;
       }
     }
 
     function calculate() {
       updatePensionState();
-      validateIbc();
       const type = $('contributorType').value;
-      const ibc = Math.max(Number($('ibc').value) || 0, LOCAL_CONFIG.smmlv);
+      const ibc = Math.max(parseMoney($('ibc').value), LOCAL_CONFIG.smmlv);
       const arlPercent = Number($('arlRisk').value) || 0;
       let total = 0;
 
@@ -532,8 +542,29 @@
 
     fields.forEach((field) => field.addEventListener('input', calculate));
     fields.forEach((field) => field.addEventListener('change', calculate));
-    $('monthlyIncome').addEventListener('blur', () => {
-      if (!$('ibc').value && $('monthlyIncome').value) $('ibc').value = Math.max(Number($('monthlyIncome').value), LOCAL_CONFIG.smmlv);
+    $('ibc').addEventListener('focus', () => {
+      $('ibc').value = parseMoney($('ibc').value) || '';
+    });
+    $('ibc').addEventListener('input', (e) => {
+      const rawValue = e.target.value.replace(/[^\d]/g, '');
+      if (!rawValue) {
+        e.target.value = '';
+        calculate();
+        return;
+      }
+      const formatted = formatMoney(rawValue);
+      const oldLength = e.target.value.length;
+      e.target.value = formatted;
+      const newLength = formatted.length;
+      const cursorPos = e.target.selectionStart;
+      const diff = newLength - oldLength;
+      const newCursorPos = Math.min(cursorPos + diff, newLength);
+      e.target.setSelectionRange(newCursorPos, newCursorPos);
+      calculate();
+    });
+    $('ibc').addEventListener('blur', () => {
+      validateIbc();
+      $('ibc').value = formatMoney(Math.max(parseMoney($('ibc').value), LOCAL_CONFIG.smmlv));
       calculate();
     });
 
