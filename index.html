@@ -186,6 +186,14 @@
     .review-success h3 { margin: 12px 0 6px; color: var(--green-2); }
     .reviews-display { display: grid; gap: 16px; }
     .reviews-display h3 { margin: 0 0 18px; color: var(--navy); font-family: 'Montserrat', sans-serif; font-size: 1.5rem; }
+    .reviews-carousel-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+    .reviews-controls { display: flex; gap: 10px; }
+    .review-nav { width: 42px; height: 42px; border: 0; border-radius: 999px; display: grid; place-items: center; background: linear-gradient(135deg,var(--navy),#0B416B); color: var(--white); font-size: 1.35rem; font-weight: 900; cursor: pointer; box-shadow: var(--soft-shadow); transition: transform .2s ease, opacity .2s ease; }
+    .review-nav:hover { transform: translateY(-2px); }
+    .review-nav:disabled { opacity: .38; cursor: not-allowed; transform: none; }
+    .reviews-page { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; animation: reviewsPageIn .45s ease both; }
+    .reviews-page.single { grid-template-columns: 1fr; }
+    @keyframes reviewsPageIn { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: translateX(0); } }
     .review-item { background: rgba(255,255,255,.88); backdrop-filter: blur(12px); border-radius: 22px; padding: 20px; border: 1px solid rgba(255,255,255,.72); box-shadow: var(--soft-shadow); animation: reveal .6s ease forwards; }
     .review-item .reviewer { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
     .reviewer-avatar { width: 44px; height: 44px; border-radius: 999px; display: grid; place-items: center; font-weight: 900; font-size: 1.1rem; color: var(--white); background: linear-gradient(135deg, var(--cyan), var(--navy)); flex-shrink: 0; }
@@ -201,7 +209,7 @@
     @keyframes reveal { to { opacity: 1; transform: translateY(0); } }
     @media (max-width: 950px) { .hero-grid, .calculator, .columns, .reviews-grid, .guide-grid { grid-template-columns: 1fr; } .visual-card { min-height: auto; } .benefits-grid, .social-grid { grid-template-columns: repeat(2,1fr); } }
     @media (max-width: 600px) { .social-grid { grid-template-columns: 1fr; } }
-    @media (max-width: 600px) { .nav { align-items: flex-start; flex-direction: column; padding: 14px 0; } .btn { width: 100%; } .benefits-grid, .dashboard-mini { grid-template-columns: 1fr; } .card { padding: 22px; } .results-head, .total { align-items: flex-start; flex-direction: column; } h1 { letter-spacing: -1.8px; } }
+    @media (max-width: 600px) { .nav { align-items: flex-start; flex-direction: column; padding: 14px 0; } .btn { width: 100%; } .benefits-grid, .dashboard-mini, .reviews-page { grid-template-columns: 1fr; } .card { padding: 22px; } .results-head, .total, .reviews-carousel-head { align-items: flex-start; flex-direction: column; } h1 { letter-spacing: -1.8px; } }
   </style>
 </head>
 <body>
@@ -455,8 +463,15 @@
             </div>
           </div>
           <div class="reviews-display reveal delay-2">
-            <h3>Lo que dicen nuestros clientes</h3>
+            <div class="reviews-carousel-head">
+              <h3>Lo que dicen nuestros clientes</h3>
+              <div class="reviews-controls" aria-label="Navegar reseñas">
+                <button class="review-nav" id="reviewsPrev" type="button" aria-label="Ver reseñas anteriores">‹</button>
+                <button class="review-nav" id="reviewsNext" type="button" aria-label="Ver más reseñas">›</button>
+              </div>
+            </div>
             <div id="reviewsList"><div class="no-reviews">Sé el primero en dejar una reseña 🌟</div></div>
+            <div class="reviewer-date" id="reviewsPageIndicator"></div>
           </div>
         </div>
       </div>
@@ -824,22 +839,54 @@
       starBtns.forEach(b => b.classList.toggle('active', Number(b.dataset.v) <= n));
     }
 
+    let publicReviews = [];
+    let reviewsPage = 0;
+    const reviewsPerPage = 4;
+
+    function reviewCard(r) {
+      const name = r.name?.trim() || 'Cliente anónimo';
+      const initial = name.charAt(0).toUpperCase();
+      const stars = '★'.repeat(r.stars || 5) + '☆'.repeat(5 - (r.stars || 5));
+      const date = r.createdAt?.toDate ? r.createdAt.toDate().toLocaleDateString('es-CO', { year:'numeric', month:'short', day:'numeric' }) : '';
+      return `<div class="review-item"><div class="reviewer"><div class="reviewer-avatar">${initial}</div><div><div class="reviewer-name">${name}</div><div class="reviewer-date">${date}</div></div></div><div class="review-stars">${stars}</div><p class="review-text">${r.text || ''}</p></div>`;
+    }
+
+    function renderReviewsPage() {
+      const totalPages = Math.max(1, Math.ceil(publicReviews.length / reviewsPerPage));
+      reviewsPage = Math.min(Math.max(reviewsPage, 0), totalPages - 1);
+      if (!publicReviews.length) {
+        $('reviewsList').innerHTML = '<div class="no-reviews">Sé el primero en dejar una reseña 🌟</div>';
+        $('reviewsPageIndicator').textContent = '';
+        $('reviewsPrev').disabled = true;
+        $('reviewsNext').disabled = true;
+        return;
+      }
+      const start = reviewsPage * reviewsPerPage;
+      const items = publicReviews.slice(start, start + reviewsPerPage);
+      $('reviewsList').innerHTML = `<div class="reviews-page ${items.length === 1 ? 'single' : ''}">${items.map(reviewCard).join('')}</div>`;
+      $('reviewsPageIndicator').textContent = `Mostrando ${start + 1}-${start + items.length} de ${publicReviews.length} reseñas`;
+      $('reviewsPrev').disabled = reviewsPage === 0;
+      $('reviewsNext').disabled = reviewsPage >= totalPages - 1;
+    }
+
     async function loadReviews() {
       try {
-        const q = query(collection(db, 'reviews'), orderBy('createdAt', 'desc'), limit(6));
+        const q = query(collection(db, 'reviews'), orderBy('createdAt', 'desc'), limit(24));
         const snap = await getDocs(q);
-        if (snap.empty) return;
-        const html = snap.docs.map(d => {
-          const r = d.data();
-          const name = r.name?.trim() || 'Cliente anónimo';
-          const initial = name.charAt(0).toUpperCase();
-          const stars = '★'.repeat(r.stars || 5) + '☆'.repeat(5 - (r.stars || 5));
-          const date = r.createdAt?.toDate ? r.createdAt.toDate().toLocaleDateString('es-CO', { year:'numeric', month:'short', day:'numeric' }) : '';
-          return `<div class="review-item"><div class="reviewer"><div class="reviewer-avatar">${initial}</div><div><div class="reviewer-name">${name}</div><div class="reviewer-date">${date}</div></div></div><div class="review-stars">${stars}</div><p class="review-text">${r.text || ''}</p></div>`;
-        }).join('');
-        $('reviewsList').innerHTML = html;
+        publicReviews = snap.docs.map(d => d.data());
+        reviewsPage = 0;
+        renderReviewsPage();
       } catch { }
     }
+
+    $('reviewsPrev').addEventListener('click', () => {
+      reviewsPage -= 1;
+      renderReviewsPage();
+    });
+    $('reviewsNext').addEventListener('click', () => {
+      reviewsPage += 1;
+      renderReviewsPage();
+    });
 
     $('submitReview').addEventListener('click', async () => {
       if (!selectedStars) { starBtns[0].style.animation = 'none'; alert('Selecciona al menos una estrella ★'); return; }
