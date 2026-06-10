@@ -65,7 +65,11 @@
     .hero-grid { position: relative; display: grid; grid-template-columns: 1.04fr .96fr; gap: 38px; align-items: center; }
     .eyebrow { display: inline-flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: 999px; background: rgba(0,180,216,.14); color: var(--navy); font-weight: 800; border: 1px solid rgba(0,180,216,.22); }
     h1 { margin: 22px 0 18px; color: var(--navy); font-family: 'Montserrat', sans-serif; font-size: clamp(2.35rem, 5.4vw, 5.3rem); line-height: .98; letter-spacing: -3px; }
+    .hero-headline { min-height: clamp(9.2rem, 20vw, 15.9rem); }
+    .headline-panel { display: none; animation: headlineIn .75s ease both; }
+    .headline-panel.active { display: block; }
     .gradient-text { background: linear-gradient(120deg, var(--cyan), var(--green), var(--orange)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    @keyframes headlineIn { from { opacity: 0; transform: translateY(18px); filter: blur(5px); } to { opacity: 1; transform: translateY(0); filter: blur(0); } }
     .subtitle { color: var(--muted); font-size: clamp(1rem, 2vw, 1.24rem); line-height: 1.75; max-width: 720px; }
     .hero-actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 28px; }
     .social-links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 22px; }
@@ -84,6 +88,7 @@
     .dashboard-mini { margin-top: 18px; display: grid; grid-template-columns: repeat(2,1fr); gap: 14px; }
     .mini-stat { padding: 18px; border-radius: 22px; background: rgba(255,255,255,.11); border: 1px solid rgba(255,255,255,.14); backdrop-filter: blur(10px); }
     .mini-stat strong { display: block; color: var(--green-2); font-size: 1.55rem; }
+    .mini-stat span { display: block; margin-top: 6px; color: rgba(255,255,255,.78); line-height: 1.45; font-size: .9rem; }
     section { padding: 76px 0; }
     .section-title { text-align: center; max-width: 790px; margin: 0 auto 38px; }
     .section-title h2 { margin: 0 0 12px; color: var(--navy); font-family: 'Montserrat', sans-serif; font-size: clamp(1.9rem, 3.5vw, 3rem); letter-spacing: -1.4px; }
@@ -120,6 +125,21 @@
     .icon { width: 62px; height: 62px; border-radius: 20px; display: grid; place-items: center; color: var(--navy); background: linear-gradient(135deg, rgba(0,180,216,.2), rgba(140,198,63,.24)); font-size: 1.9rem; margin-bottom: 18px; }
     .benefit h3 { color: var(--navy); margin: 0 0 10px; }
     .benefit p { color: var(--muted); line-height: 1.65; margin: 0; }
+    .guide-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 22px; align-items: stretch; }
+    .guide-card { background: linear-gradient(135deg,#ffffff,#f7fbff); border: 1px solid #E3EEF7; border-radius: 28px; padding: 28px; box-shadow: var(--soft-shadow); }
+    .guide-card h3 { margin: 0 0 14px; color: var(--navy); font-family: 'Montserrat', sans-serif; font-size: 1.35rem; }
+    .guide-list { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+    .guide-list li { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: start; padding: 14px; border-radius: 18px; background: rgba(0,180,216,.07); color: var(--text); line-height: 1.55; }
+    .guide-list strong { color: var(--navy); }
+    .guide-mark { width: 34px; height: 34px; border-radius: 12px; display: grid; place-items: center; color: var(--navy); background: linear-gradient(135deg,var(--green-2),var(--cyan)); font-weight: 900; }
+    .rate-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; margin-top: 16px; }
+    .rate-box { padding: 16px; border-radius: 18px; background: var(--navy); color: var(--white); }
+    .rate-box span { display: block; color: rgba(255,255,255,.7); font-size: .86rem; }
+    .rate-box strong { display: block; color: var(--green-2); font-size: 1.35rem; margin-top: 4px; }
+    .source-links { display: grid; gap: 10px; margin-top: 18px; }
+    .source-link { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 13px 15px; border-radius: 16px; background: #F8FBFE; border: 1px solid #E3EEF7; color: var(--navy); font-weight: 800; transition: transform .2s ease, border-color .2s ease; }
+    .source-link:hover { transform: translateX(4px); border-color: var(--cyan); }
+    .deadline-box { margin-top: 16px; padding: 18px; border-radius: 20px; background: linear-gradient(135deg, rgba(255,183,3,.16), rgba(140,198,63,.16)); color: var(--navy); line-height: 1.65; font-weight: 600; }
     .cta { padding: 80px 0; }
     .cta-box { background: linear-gradient(135deg, var(--navy), #0B416B 58%, #087F9D); color: var(--white); border-radius: 38px; padding: clamp(34px, 6vw, 68px); text-align: center; box-shadow: var(--shadow); position: relative; overflow: hidden; }
     .cta-box::before { content: ''; position: absolute; width: 360px; height: 360px; border-radius: 50%; background: rgba(140,198,63,.22); left: -130px; bottom: -170px; animation: float 8s ease-in-out infinite; }
@@ -179,7 +199,7 @@
     .reveal { opacity: 0; transform: translateY(24px); animation: reveal .8s ease forwards; }
     .delay-1 { animation-delay: .12s; } .delay-2 { animation-delay: .24s; } .delay-3 { animation-delay: .36s; }
     @keyframes reveal { to { opacity: 1; transform: translateY(0); } }
-    @media (max-width: 950px) { .hero-grid, .calculator, .columns, .reviews-grid { grid-template-columns: 1fr; } .visual-card { min-height: auto; } .benefits-grid, .social-grid { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 950px) { .hero-grid, .calculator, .columns, .reviews-grid, .guide-grid { grid-template-columns: 1fr; } .visual-card { min-height: auto; } .benefits-grid, .social-grid { grid-template-columns: repeat(2,1fr); } }
     @media (max-width: 600px) { .social-grid { grid-template-columns: 1fr; } }
     @media (max-width: 600px) { .nav { align-items: flex-start; flex-direction: column; padding: 14px 0; } .btn { width: 100%; } .benefits-grid, .dashboard-mini { grid-template-columns: 1fr; } .card { padding: 22px; } .results-head, .total { align-items: flex-start; flex-direction: column; } h1 { letter-spacing: -1.8px; } }
   </style>
@@ -202,8 +222,11 @@
       <div class="container hero-grid">
         <div class="reveal">
           <span class="eyebrow">✨ Seguridad social con criterio experto</span>
-          <h1>Cuidar a quienes hacen posible tu empresa es la <span class="gradient-text">mejor inversión</span></h1>
-          <p class="subtitle">Con una correcta gestión en seguridad social, proteges a tus trabajadores, evitas sanciones y tomas decisiones con mayor tranquilidad.</p>
+          <div class="hero-headline" id="heroHeadline">
+            <h1 class="headline-panel active">Cuidar a quienes hacen posible tu empresa es la <span class="gradient-text">mejor inversión</span></h1>
+            <h1 class="headline-panel">Tu trabajo independiente también merece <span class="gradient-text">protección y respaldo</span></h1>
+          </div>
+          <p class="subtitle" id="heroSubtitle">Con una correcta gestión en seguridad social, proteges a tus trabajadores, evitas sanciones y tomas decisiones con mayor tranquilidad.</p>
           <div class="hero-actions">
             <a class="btn btn-green" href="#calculadora">Calcular aportes</a>
             <a class="btn btn-dark" href="https://wa.me/573154967667" target="_blank" rel="noopener">Hablar con un asesor</a>
@@ -214,10 +237,10 @@
           <img class="infographic-img" id="siteInfografiaImg" src="" alt="Infografía de seguridad social" style="display:none;" />
           <div class="visual-placeholder" id="infografiaPlaceholder">Sube tu infografía desde el panel de administración o coloca la imagen en <strong>Infografía/</strong></div>
           <div class="dashboard-mini">
-            <div class="mini-stat"><strong>ARL I-V</strong><span>Riesgo configurable</span></div>
-            <div class="mini-stat"><strong>2%</strong><span>Caja independiente</span></div>
-            <div class="mini-stat"><strong>50/55</strong><span>Edad para excluir pensión</span></div>
-            <div class="mini-stat"><strong id="currentYearHero">2026</strong><span>Año automático</span></div>
+            <div class="mini-stat"><strong>ARL I-V</strong><span>Clasificación por nivel de riesgo según la actividad económica o contractual.</span></div>
+            <div class="mini-stat"><strong>IBC</strong><span>Base de cotización revisada frente al SMMLV y las reglas aplicables.</span></div>
+            <div class="mini-stat"><strong>PILA</strong><span>Liquidación ordenada con novedades, vencimientos y aportes obligatorios.</span></div>
+            <div class="mini-stat"><strong id="currentYearHero">2026</strong><span>Parámetros actualizables desde el panel administrativo.</span></div>
           </div>
         </div>
       </div>
@@ -227,7 +250,7 @@
       <div class="container">
         <div class="section-title reveal">
           <h2>Calculadora de Seguridad Social</h2>
-          <p>Calcula sobre un IBC manual con tarifas locales predeterminadas. El IBC mínimo se ajusta automáticamente al SMMLV del año actual configurado en esta página.</p>
+          <p>Estima tus aportes sobre un IBC definido, con parámetros actualizables para independientes y empresas. La herramienta ajusta la base mínima al SMMLV configurado y sirve como orientación previa a la validación profesional de tu planilla.</p>
         </div>
 
         <div class="calculator">
@@ -328,6 +351,41 @@
           <div class="card benefit reveal delay-2"><div class="icon">⚖️</div><h3>Evitas sanciones y multas</h3><p>Reduce riesgos por omisiones, mora, novedades mal reportadas o liquidaciones incorrectas.</p></div>
           <div class="card benefit reveal delay-3"><div class="icon">🚀</div><h3>Empresa más fuerte</h3><p>Una nómina ordenada mejora la confianza, la continuidad y la reputación empresarial.</p></div>
           <div class="card benefit reveal delay-1"><div class="icon">🤝</div><h3>Tranquilidad para ti</h3><p>Recibe acompañamiento experto para evitar errores costosos y tomar mejores decisiones.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="guia-seguridad-social">
+      <div class="container">
+        <div class="section-title reveal">
+          <h2>Guía rápida de seguridad social en Colombia</h2>
+          <p>Información práctica para entender qué se paga, sobre qué base se liquida y qué revisar antes de presentar la planilla PILA.</p>
+        </div>
+        <div class="guide-grid">
+          <div class="guide-card reveal delay-1">
+            <h3>Checklist antes de pagar</h3>
+            <ul class="guide-list">
+              <li><span class="guide-mark">1</span><span><strong>Confirma el IBC.</strong> Para independientes, valida ingresos netos y que la base no quede por debajo de un SMMLV cuando corresponda.</span></li>
+              <li><span class="guide-mark">2</span><span><strong>Revisa salud y pensión.</strong> Salud se liquida al 12,5% y pensión al 16% sobre el IBC cuando aplica.</span></li>
+              <li><span class="guide-mark">3</span><span><strong>Selecciona bien la ARL.</strong> La tarifa cambia según el nivel de riesgo de la actividad económica o del contrato.</span></li>
+              <li><span class="guide-mark">4</span><span><strong>No olvides novedades.</strong> Ingresos, retiros, incapacidades, licencias, variaciones de salario y suspensión deben reportarse correctamente.</span></li>
+            </ul>
+            <div class="deadline-box">La planilla PILA se paga según los dos últimos dígitos del documento o NIT. Si tienes dudas con vencimientos, novedades o base correcta, te ayudamos a revisarlo antes de pagar.</div>
+          </div>
+          <div class="guide-card reveal delay-2">
+            <h3>Tarifas base 2026</h3>
+            <div class="rate-grid">
+              <div class="rate-box"><span>SMMLV configurado</span><strong id="guideSmmlv">$1.750.905</strong></div>
+              <div class="rate-box"><span>Salud independiente</span><strong id="guideHealth">12,5%</strong></div>
+              <div class="rate-box"><span>Pensión</span><strong id="guidePension">16%</strong></div>
+              <div class="rate-box"><span>ARL riesgo I-V</span><strong>0,522% - 6,960%</strong></div>
+            </div>
+            <div class="source-links" id="sourceLinks">
+              <a class="source-link" href="https://www.ugpp.gov.co/calculadora-ibc" target="_blank" rel="noopener">Calculadora IBC UGPP <span>↗</span></a>
+              <a class="source-link" href="https://www.minsalud.gov.co/Normatividad_Nuevo/Resolucion%20No%20196%20de%202026.pdf" target="_blank" rel="noopener">Resolución Minsalud 196 de 2026 <span>↗</span></a>
+              <a class="source-link" href="https://www.soi.com.co" target="_blank" rel="noopener">Portal SOI / PILA <span>↗</span></a>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -438,7 +496,12 @@
       independent: { health: 12.5, pension: 16, compensation: 2 },
       company: { healthEmployee: 4, pensionEmployer: 12, pensionEmployee: 4, compensationEmployer: 4 },
       arlRates: { '1': 0.522, '2': 1.044, '3': 2.436, '4': 4.350, '5': 6.960 },
-      social: { youtube: '', tiktok: '', instagram: '', facebook: '' }
+      social: { youtube: '', tiktok: '', instagram: '', facebook: '' },
+      sources: {
+        ugpp: 'https://www.ugpp.gov.co/calculadora-ibc',
+        minsalud: 'https://www.minsalud.gov.co/Normatividad_Nuevo/Resolucion%20No%20196%20de%202026.pdf',
+        pila: 'https://www.soi.com.co'
+      }
     };
 
     const app = initializeApp(firebaseConfig);
@@ -467,13 +530,62 @@
       $('footerSocialLinks').innerHTML = html;
     }
 
-    async function loadSocialLinks() {
+    function renderGuideSources(sources) {
+      const labels = {
+        ugpp: 'Calculadora IBC UGPP',
+        minsalud: 'Resolución Minsalud 196 de 2026',
+        pila: 'Portal SOI / PILA'
+      };
+      const html = ['ugpp', 'minsalud', 'pila']
+        .filter((key) => sources?.[key])
+        .map((key) => `<a class="source-link" href="${sources[key]}" target="_blank" rel="noopener">${labels[key]} <span>↗</span></a>`)
+        .join('');
+      if (html) $('sourceLinks').innerHTML = html;
+    }
+
+    function updateGuideStats() {
+      $('guideSmmlv').textContent = formatMoney(LOCAL_CONFIG.smmlv);
+      $('guideHealth').textContent = `${LOCAL_CONFIG.independent.health}%`;
+      $('guidePension').textContent = `${LOCAL_CONFIG.independent.pension}%`;
+      $('smmlvPill').textContent = `SMMLV: ${formatMoney(LOCAL_CONFIG.smmlv)}`;
+      $('configNotice').textContent = `SMMLV base configurado: ${formatMoney(LOCAL_CONFIG.smmlv)}. Valida siempre la norma vigente antes de presentar la planilla.`;
+    }
+
+    function applyPayrollConfig(data) {
+      if (!data) return;
+      LOCAL_CONFIG.smmlv = Number(data.smmlv) || LOCAL_CONFIG.smmlv;
+      LOCAL_CONFIG.independent = { ...LOCAL_CONFIG.independent, ...(data.independent || {}) };
+      LOCAL_CONFIG.company = { ...LOCAL_CONFIG.company, ...(data.company || {}) };
+      LOCAL_CONFIG.social = { ...LOCAL_CONFIG.social, ...(data.social || {}) };
+      LOCAL_CONFIG.sources = { ...LOCAL_CONFIG.sources, ...(data.sources || {}) };
+    }
+
+    function startHeroRotation() {
+      const panels = Array.from(document.querySelectorAll('.headline-panel'));
+      const subtitles = [
+        'Con una correcta gestión en seguridad social, proteges a tus trabajadores, evitas sanciones y tomas decisiones con mayor tranquilidad.',
+        'Como independiente, tus aportes son la base para acceder a salud, pensión, riesgos laborales y respaldo cuando más lo necesitas.'
+      ];
+      if (panels.length < 2) return;
+      let current = 0;
+      setInterval(() => {
+        panels[current].classList.remove('active');
+        current = (current + 1) % panels.length;
+        panels[current].classList.add('active');
+        $('heroSubtitle').textContent = subtitles[current];
+      }, 5200);
+    }
+
+    async function loadPayrollSettings() {
       try {
         const snap = await getDoc(doc(db, 'settings', 'payroll'));
-        if (snap.exists()) renderSocialLinks({ ...LOCAL_CONFIG.social, ...(snap.data().social || {}) });
+        if (snap.exists()) applyPayrollConfig(snap.data());
       } catch (error) {
-        renderSocialLinks(LOCAL_CONFIG.social);
       }
+      renderSocialLinks(LOCAL_CONFIG.social);
+      renderGuideSources(LOCAL_CONFIG.sources);
+      updateGuideStats();
+      calculate();
     }
 
     function getArlLabel() {
@@ -571,9 +683,11 @@
     const currentYear = new Date().getFullYear();
     $('year').textContent = currentYear;
     $('currentYearHero').textContent = currentYear;
-    $('smmlvPill').textContent = `SMMLV: ${formatMoney(LOCAL_CONFIG.smmlv)}`;
+    updateGuideStats();
     renderSocialLinks(LOCAL_CONFIG.social);
-    loadSocialLinks();
+    renderGuideSources(LOCAL_CONFIG.sources);
+    startHeroRotation();
+    loadPayrollSettings();
     calculate();
     loadSiteImages();
 
