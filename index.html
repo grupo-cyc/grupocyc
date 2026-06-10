@@ -64,12 +64,13 @@
     @keyframes float { 0%,100% { transform: translate3d(0,0,0); } 50% { transform: translate3d(16px,-24px,0); } }
     .hero-grid { position: relative; display: grid; grid-template-columns: 1.04fr .96fr; gap: 38px; align-items: center; }
     .eyebrow { display: inline-flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: 999px; background: rgba(0,180,216,.14); color: var(--navy); font-weight: 800; border: 1px solid rgba(0,180,216,.22); }
-    h1 { margin: 22px 0 18px; color: var(--navy); font-family: 'Montserrat', sans-serif; font-size: clamp(2.35rem, 5.4vw, 5.3rem); line-height: .98; letter-spacing: -3px; }
-    .hero-headline { min-height: clamp(9.2rem, 20vw, 15.9rem); }
-    .headline-panel { display: none; animation: headlineIn .75s ease both; }
+    h1 { margin: 22px 0 18px; color: var(--navy); font-family: 'Montserrat', sans-serif; font-size: clamp(2.35rem, 4.9vw, 4.85rem); line-height: 1.02; letter-spacing: -3px; }
+    .hero-headline { min-height: clamp(12rem, 25vw, 18.5rem); margin: 22px 0 18px; max-width: 720px; overflow: hidden; }
+    .headline-panel { display: none; margin: 0; max-width: 100%; overflow-wrap: anywhere; animation: headlineIn .75s ease both; }
     .headline-panel.active { display: block; }
     .gradient-text { background: linear-gradient(120deg, var(--cyan), var(--green), var(--orange)); -webkit-background-clip: text; background-clip: text; color: transparent; }
     @keyframes headlineIn { from { opacity: 0; transform: translateY(18px); filter: blur(5px); } to { opacity: 1; transform: translateY(0); filter: blur(0); } }
+    @keyframes headlineOut { from { opacity: 1; transform: translateY(0); filter: blur(0); } to { opacity: 0; transform: translateY(-10px); filter: blur(4px); } }
     .subtitle { color: var(--muted); font-size: clamp(1rem, 2vw, 1.24rem); line-height: 1.75; max-width: 720px; }
     .hero-actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 28px; }
     .social-links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 22px; }
@@ -392,6 +393,11 @@
               <a class="source-link" href="https://www.ugpp.gov.co/calculadora-ibc" target="_blank" rel="noopener">Calculadora IBC UGPP <span>↗</span></a>
               <a class="source-link" href="https://www.minsalud.gov.co/Normatividad_Nuevo/Resolucion%20No%20196%20de%202026.pdf" target="_blank" rel="noopener">Resolución Minsalud 196 de 2026 <span>↗</span></a>
               <a class="source-link" href="https://www.soi.com.co" target="_blank" rel="noopener">Portal SOI / PILA <span>↗</span></a>
+              <a class="source-link" href="https://www.aportesenlinea.com" target="_blank" rel="noopener">Aportes en Línea <span>↗</span></a>
+              <a class="source-link" href="https://www.suaporte.com.co" target="_blank" rel="noopener">Su aporte (ARUS) <span>↗</span></a>
+              <a class="source-link" href="https://www.simple.co" target="_blank" rel="noopener">Simple <span>↗</span></a>
+              <a class="source-link" href="https://www.miplanilla.com" target="_blank" rel="noopener">Mi Planilla <span>↗</span></a>
+              <a class="source-link" href="https://www.asopagos.com" target="_blank" rel="noopener">Asopagos <span>↗</span></a>
             </div>
           </div>
         </div>
@@ -515,7 +521,12 @@
       sources: {
         ugpp: 'https://www.ugpp.gov.co/calculadora-ibc',
         minsalud: 'https://www.minsalud.gov.co/Normatividad_Nuevo/Resolucion%20No%20196%20de%202026.pdf',
-        pila: 'https://www.soi.com.co'
+        pila: 'https://www.soi.com.co',
+        aportesLinea: 'https://www.aportesenlinea.com',
+        suaporte: 'https://www.suaporte.com.co',
+        simple: 'https://www.simple.co',
+        miPlanilla: 'https://www.miplanilla.com',
+        asopagos: 'https://www.asopagos.com'
       }
     };
 
@@ -549,9 +560,14 @@
       const labels = {
         ugpp: 'Calculadora IBC UGPP',
         minsalud: 'Resolución Minsalud 196 de 2026',
-        pila: 'Portal SOI / PILA'
+        pila: 'Portal SOI / PILA',
+        aportesLinea: 'Aportes en Línea',
+        suaporte: 'Su aporte (ARUS)',
+        simple: 'Simple',
+        miPlanilla: 'Mi Planilla',
+        asopagos: 'Asopagos'
       };
-      const html = ['ugpp', 'minsalud', 'pila']
+      const html = ['ugpp', 'minsalud', 'pila', 'aportesLinea', 'suaporte', 'simple', 'miPlanilla', 'asopagos']
         .filter((key) => sources?.[key])
         .map((key) => `<a class="source-link" href="${sources[key]}" target="_blank" rel="noopener">${labels[key]} <span>↗</span></a>`)
         .join('');
