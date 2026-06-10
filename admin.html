@@ -62,6 +62,10 @@
     .ra-date { font-size: .82rem; color: var(--muted); }
     .ra-stars { color: #F4A028; font-size: 1rem; letter-spacing: 2px; }
     .ra-text { color: var(--text); line-height: 1.6; margin: 4px 0 0; }
+    .ra-date-edit { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .ra-date-edit input { width: auto; min-width: 165px; padding: 10px 12px; border-radius: 12px; font-size: .86rem; }
+    .btn-small { background: rgba(0,180,216,.12); color: var(--navy); border: 1px solid rgba(0,180,216,.25); border-radius: 999px; padding: 8px 13px; font: inherit; font-weight: 800; cursor: pointer; white-space: nowrap; font-size: .82rem; transition: background .2s ease; }
+    .btn-small:hover { background: var(--cyan); color: #fff; }
     .btn-danger { background: rgba(214,40,40,.1); color: var(--danger); border: 1px solid rgba(214,40,40,.22); border-radius: 999px; padding: 8px 14px; font: inherit; font-weight: 800; cursor: pointer; white-space: nowrap; font-size: .85rem; transition: background .2s ease; }
     .btn-danger:hover { background: var(--danger); color: #fff; }
     .no-reviews-admin { text-align: center; padding: 32px; color: var(--muted); }
@@ -202,6 +206,22 @@
               </label>
             </div>
           </section>
+
+          <section class="card full">
+            <h2>Fuentes y enlaces útiles</h2>
+            <p>Estos enlaces se muestran en la guía pública de seguridad social para que los usuarios consulten herramientas y normativa de referencia.</p>
+            <div class="form-grid">
+              <label>Calculadora IBC UGPP
+                <input id="sourceUgpp" type="url" value="https://www.ugpp.gov.co/calculadora-ibc" placeholder="https://www.ugpp.gov.co/calculadora-ibc" />
+              </label>
+              <label>Normativa Minsalud
+                <input id="sourceMinsalud" type="url" value="https://www.minsalud.gov.co/Normatividad_Nuevo/Resolucion%20No%20196%20de%202026.pdf" placeholder="https://www.minsalud.gov.co/..." />
+              </label>
+              <label>Portal PILA / Operador
+                <input id="sourcePila" type="url" value="https://www.soi.com.co" placeholder="https://www.soi.com.co" />
+              </label>
+            </div>
+          </section>
         </div>
 
         <div class="actions">
@@ -221,7 +241,7 @@
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js';
     import { getAnalytics, isSupported } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-analytics.js';
-    import { getFirestore, doc, getDoc, setDoc, serverTimestamp, collection, query, orderBy, getDocs, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js';
+    import { getFirestore, doc, getDoc, setDoc, serverTimestamp, collection, query, orderBy, getDocs, deleteDoc, Timestamp } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js';
 
     const firebaseConfig = {
       apiKey: 'AIzaSyCpVmdDTosviTAEnng2zYqzIqQMCurIG8c',
@@ -275,6 +295,11 @@
           instagram: textValue('socialInstagram'),
           facebook: textValue('socialFacebook')
         },
+        sources: {
+          ugpp: textValue('sourceUgpp'),
+          minsalud: textValue('sourceMinsalud'),
+          pila: textValue('sourcePila')
+        },
         updatedAt: serverTimestamp()
       };
     }
@@ -296,6 +321,9 @@
       $('socialTiktok').value = data.social?.tiktok ?? '';
       $('socialInstagram').value = data.social?.instagram ?? '';
       $('socialFacebook').value = data.social?.facebook ?? '';
+      $('sourceUgpp').value = data.sources?.ugpp ?? 'https://www.ugpp.gov.co/calculadora-ibc';
+      $('sourceMinsalud').value = data.sources?.minsalud ?? 'https://www.minsalud.gov.co/Normatividad_Nuevo/Resolucion%20No%20196%20de%202026.pdf';
+      $('sourcePila').value = data.sources?.pila ?? 'https://www.soi.com.co';
     }
 
     async function loadSettings() {
@@ -454,11 +482,28 @@
           const name = r.name?.trim() || 'Anónimo';
           const initial = name.charAt(0).toUpperCase();
           const stars = '★'.repeat(r.stars || 5) + '☆'.repeat(5 - (r.stars || 5));
-          const date = r.createdAt?.toDate ? r.createdAt.toDate().toLocaleDateString('es-CO', { year:'numeric', month:'short', day:'numeric' }) : 'Sin fecha';
-          return `<div class="review-admin-item" id="ri-${d.id}"><div class="ra-avatar">${initial}</div><div><div class="ra-name">${name} <span class="ra-date">&mdash; ${date}</span></div><div class="ra-stars">${stars}</div><p class="ra-text">${r.text || ''}</p></div><button class="btn-danger" onclick="deleteReview('${d.id}')">Eliminar</button></div>`;
+          const dateObj = r.createdAt?.toDate ? r.createdAt.toDate() : null;
+          const date = dateObj ? dateObj.toLocaleDateString('es-CO', { year:'numeric', month:'short', day:'numeric' }) : 'Sin fecha';
+          const inputDate = dateObj ? dateObj.toISOString().slice(0, 10) : '';
+          return `<div class="review-admin-item" id="ri-${d.id}"><div class="ra-avatar">${initial}</div><div><div class="ra-name">${name} <span class="ra-date">&mdash; ${date}</span></div><div class="ra-stars">${stars}</div><p class="ra-text">${r.text || ''}</p><div class="ra-date-edit"><input id="date-${d.id}" type="date" value="${inputDate}" /><button class="btn-small" onclick="updateReviewDate('${d.id}')">Guardar fecha</button></div></div><button class="btn-danger" onclick="deleteReview('${d.id}')">Eliminar</button></div>`;
         }).join('');
       } catch { container.innerHTML = '<div class="no-reviews-admin">No fue posible cargar las reseñas.</div>'; }
     }
+
+    window.updateReviewDate = async (id) => {
+      const input = document.getElementById(`date-${id}`);
+      if (!input?.value) { alert('Selecciona una fecha válida.'); return; }
+      try {
+        const [year, month, day] = input.value.split('-').map(Number);
+        const localDate = new Date(year, month - 1, day, 12, 0, 0);
+        await setDoc(doc(db, 'reviews', id), { createdAt: Timestamp.fromDate(localDate) }, { merge: true });
+        await loadAdminReviews();
+      } catch (error) {
+        console.error('Error actualizando fecha de reseña:', error);
+        const fileHint = location.protocol === 'file:' ? ' Abre el panel desde http://localhost, no directamente como archivo file://.' : '';
+        alert(`No fue posible actualizar la fecha.${fileHint} Si continúa, revisa permisos de Firestore.`);
+      }
+    };
 
     window.deleteReview = async (id) => {
       if (!confirm('¿Eliminar esta reseña?')) return;
