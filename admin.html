@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin | Grupo Consultor C&C</title>
+  <script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js'); fbq('init', '1019431564117304'); fbq('track', 'PageView');</script>
+  <noscript><img height="1" width="1" src="https://www.facebook.com/tr?id=1019431564117304&ev=PageView&noscript=1" /></noscript>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -220,6 +222,21 @@
               <label>Portal PILA / Operador
                 <input id="sourcePila" type="url" value="https://www.soi.com.co" placeholder="https://www.soi.com.co" />
               </label>
+              <label>Aportes en Línea
+                <input id="sourceAportesLinea" type="url" value="https://www.aportesenlinea.com" placeholder="https://www.aportesenlinea.com" />
+              </label>
+              <label>Su aporte (ARUS)
+                <input id="sourceSuaporte" type="url" value="https://www.suaporte.com.co" placeholder="https://www.suaporte.com.co" />
+              </label>
+              <label>Simple
+                <input id="sourceSimple" type="url" value="https://www.simple.co" placeholder="https://www.simple.co" />
+              </label>
+              <label>Mi Planilla
+                <input id="sourceMiPlanilla" type="url" value="https://www.miplanilla.com" placeholder="https://www.miplanilla.com" />
+              </label>
+              <label>Asopagos
+                <input id="sourceAsopagos" type="url" value="https://www.asopagos.com" placeholder="https://www.asopagos.com" />
+              </label>
             </div>
           </section>
         </div>
@@ -298,7 +315,12 @@
         sources: {
           ugpp: textValue('sourceUgpp'),
           minsalud: textValue('sourceMinsalud'),
-          pila: textValue('sourcePila')
+          pila: textValue('sourcePila'),
+          aportesLinea: textValue('sourceAportesLinea'),
+          suaporte: textValue('sourceSuaporte'),
+          simple: textValue('sourceSimple'),
+          miPlanilla: textValue('sourceMiPlanilla'),
+          asopagos: textValue('sourceAsopagos')
         },
         updatedAt: serverTimestamp()
       };
@@ -324,6 +346,11 @@
       $('sourceUgpp').value = data.sources?.ugpp ?? 'https://www.ugpp.gov.co/calculadora-ibc';
       $('sourceMinsalud').value = data.sources?.minsalud ?? 'https://www.minsalud.gov.co/Normatividad_Nuevo/Resolucion%20No%20196%20de%202026.pdf';
       $('sourcePila').value = data.sources?.pila ?? 'https://www.soi.com.co';
+      $('sourceAportesLinea').value = data.sources?.aportesLinea ?? 'https://www.aportesenlinea.com';
+      $('sourceSuaporte').value = data.sources?.suaporte ?? 'https://www.suaporte.com.co';
+      $('sourceSimple').value = data.sources?.simple ?? 'https://www.simple.co';
+      $('sourceMiPlanilla').value = data.sources?.miPlanilla ?? 'https://www.miplanilla.com';
+      $('sourceAsopagos').value = data.sources?.asopagos ?? 'https://www.asopagos.com';
     }
 
     async function loadSettings() {
