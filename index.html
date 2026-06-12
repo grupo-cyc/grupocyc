@@ -578,7 +578,7 @@
 
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js';
-    import { getFirestore, doc, getDoc, collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js';
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp, increment } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js';
 
     const firebaseConfig = {
       apiKey: 'AIzaSyCpVmdDTosviTAEnng2zYqzIqQMCurIG8c',
@@ -761,7 +761,7 @@
       $('grandTotal').textContent = formatMoney(total);
     }
 
-    fields.forEach((field) => field.addEventListener('input', calculate));
+    fields.forEach((field) => field.addEventListener('input', () => { window.__trackCalcOnce(); calculate(); }));
     fields.forEach((field) => field.addEventListener('change', calculate));
     $('ibc').addEventListener('focus', () => {
       $('ibc').value = parseMoney($('ibc').value) || '';
@@ -788,6 +788,39 @@
       $('ibc').value = formatMoney(Math.max(parseMoney($('ibc').value), LOCAL_CONFIG.smmlv));
       calculate();
     });
+
+    // ── ANALYTICS / TRACKING ──────────────────────────────────────────────────
+    async function trackEvent(eventName) {
+      try {
+        const ref = doc(db, 'analytics', 'events');
+        const visitRef = collection(db, 'analytics', 'events', 'visits');
+        if (eventName === 'pageview') {
+          await setDoc(ref, {
+            pageviews: increment(1),
+            lastVisit: serverTimestamp()
+          }, { merge: true });
+          await addDoc(visitRef, {
+            ts: serverTimestamp(),
+            page: location.pathname || '/',
+            ref: document.referrer || ''
+          });
+        } else {
+          await setDoc(ref, { [eventName]: increment(1) }, { merge: true });
+        }
+      } catch {}
+    }
+
+    trackEvent('pageview');
+
+    document.querySelectorAll('a[href*="wa.me"]').forEach(el => {
+      el.addEventListener('click', () => trackEvent('whatsappClicks'), { once: true });
+    });
+
+    const origCalculate = calculate;
+    let calcTracked = false;
+    window.__trackCalcOnce = function() {
+      if (!calcTracked) { calcTracked = true; trackEvent('calculatorUses'); }
+    };
 
     const currentYear = new Date().getFullYear();
     $('year').textContent = currentYear;
