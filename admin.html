@@ -84,6 +84,30 @@
     .img-status.ok { color: #2F7D32; } .img-status.error { color: var(--danger); }
     @media (max-width: 700px) { .img-uploader { grid-template-columns: 1fr; } }
     @media (max-width: 980px) { .layout { grid-template-columns: 1fr; } .sidebar { position: relative; height: auto; } .grid, .form-grid { grid-template-columns: 1fr; } .topbar, .actions { align-items: stretch; flex-direction: column; } .btn { width: 100%; } }
+    .analytics-strip { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 18px; margin-bottom: 28px; }
+    .stat-card { border-radius: 22px; padding: 22px 20px; color: var(--white); display: flex; flex-direction: column; gap: 10px; position: relative; overflow: hidden; box-shadow: var(--shadow); }
+    .stat-card::after { content: ''; position: absolute; width: 100px; height: 100px; border-radius: 50%; background: rgba(255,255,255,.1); right: -30px; bottom: -40px; }
+    .stat-card.views { background: linear-gradient(135deg, #071C36, #0B416B); }
+    .stat-card.calc { background: linear-gradient(135deg, #0A6423, #8CC63F); color: #fff; }
+    .stat-card.wa { background: linear-gradient(135deg, #128C7E, #25D366); }
+    .stat-card.last { background: linear-gradient(135deg, #5A189A, #9D4EDD); }
+    .stat-label { font-size: .82rem; font-weight: 700; opacity: .82; text-transform: uppercase; letter-spacing: .5px; }
+    .stat-value { font-size: clamp(1.9rem, 3.5vw, 2.8rem); font-weight: 800; line-height: 1; letter-spacing: -1px; }
+    .stat-sub { font-size: .82rem; opacity: .78; line-height: 1.4; }
+    .stat-loading { opacity: .5; font-size: .9rem; }
+    .visits-panel { margin-bottom: 28px; }
+    .visits-panel h2 { color: var(--navy); margin: 0 0 6px; }
+    .visits-panel > p { color: var(--muted); margin: 0 0 18px; font-size: .9rem; }
+    .visits-table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+    .visits-table th { text-align: left; padding: 10px 14px; color: var(--navy); font-weight: 800; border-bottom: 2px solid #E3EEF7; background: #F4F7F9; }
+    .visits-table td { padding: 10px 14px; border-bottom: 1px solid #EEF3F8; color: var(--text); vertical-align: top; }
+    .visits-table tr:last-child td { border-bottom: none; }
+    .visits-table tr:hover td { background: #F8FBFE; }
+    .ref-link { color: var(--cyan); font-size: .8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; display: inline-block; vertical-align: middle; }
+    .refresh-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px; background: rgba(0,180,216,.12); color: var(--navy); border: 1px solid rgba(0,180,216,.25); font: inherit; font-weight: 800; cursor: pointer; font-size: .82rem; transition: background .2s; }
+    .refresh-btn:hover { background: var(--cyan); color: #fff; }
+    @media (max-width: 700px) { .analytics-strip { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 420px) { .analytics-strip { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -98,6 +122,42 @@
     </aside>
 
     <main class="main">
+      <!-- ── PANEL ANALÍTICA ──────────────────────────────────────────── -->
+      <div class="analytics-strip">
+        <div class="stat-card views">
+          <span class="stat-label">Visitas totales</span>
+          <span class="stat-value stat-loading" id="statPageviews">—</span>
+          <span class="stat-sub" id="statLastVisit">Cargando...</span>
+        </div>
+        <div class="stat-card calc">
+          <span class="stat-label">Cálculos realizados</span>
+          <span class="stat-value stat-loading" id="statCalc">—</span>
+          <span class="stat-sub">Veces que usaron la calculadora</span>
+        </div>
+        <div class="stat-card wa">
+          <span class="stat-label">Clics en WhatsApp</span>
+          <span class="stat-value stat-loading" id="statWa">—</span>
+          <span class="stat-sub">Personas que contactaron directo</span>
+        </div>
+        <div class="stat-card last">
+          <span class="stat-label">Conversión WA</span>
+          <span class="stat-value stat-loading" id="statConv">—</span>
+          <span class="stat-sub">% de visitantes que escribieron</span>
+        </div>
+      </div>
+
+      <section class="card visits-panel full">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:6px;">
+          <div>
+            <h2>Últimas visitas registradas</h2>
+            <p>Las 20 más recientes. Se actualiza cada vez que alguien abre la página pública.</p>
+          </div>
+          <button class="refresh-btn" id="refreshVisits">↺ Actualizar</button>
+        </div>
+        <div style="overflow-x:auto;"><table class="visits-table"><thead><tr><th>Fecha y hora</th><th>Página</th><th>Referencia (origen)</th></tr></thead><tbody id="visitsBody"><tr><td colspan="3" style="color:var(--muted);text-align:center;">Cargando visitas...</td></tr></tbody></table></div>
+      </section>
+      <!-- ───────────────────────────────────────────────────────────────── -->
+
       <div class="topbar">
         <div>
           <span class="badge">Dashboard interno</span>
@@ -256,7 +316,7 @@
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js';
     import { getAnalytics, isSupported } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-analytics.js';
-    import { getFirestore, doc, getDoc, setDoc, serverTimestamp, collection, query, orderBy, getDocs, deleteDoc, Timestamp } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js';
+    import { getFirestore, doc, getDoc, setDoc, serverTimestamp, collection, query, orderBy, limit, getDocs, deleteDoc, Timestamp } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js';
 
     const firebaseConfig = {
       apiKey: 'AIzaSyCpVmdDTosviTAEnng2zYqzIqQMCurIG8c',
@@ -542,6 +602,75 @@
     };
 
     loadAdminReviews();
+
+    // ── ANALÍTICA ───────────────────────────────────────────────────────
+    function fmt(n) { return (n || 0).toLocaleString('es-CO'); }
+
+    async function loadAnalytics() {
+      try {
+        const evSnap = await getDoc(doc(db, 'analytics', 'events'));
+        const ev = evSnap.exists() ? evSnap.data() : {};
+        const pageviews = ev.pageviews || 0;
+        const calcUses = ev.calculatorUses || 0;
+        const waClicks = ev.whatsappClicks || 0;
+        const conv = pageviews > 0 ? ((waClicks / pageviews) * 100).toFixed(1) : '0.0';
+
+        $('statPageviews').textContent = fmt(pageviews);
+        $('statPageviews').classList.remove('stat-loading');
+
+        const lastVisit = ev.lastVisit?.toDate ? ev.lastVisit.toDate() : null;
+        $('statLastVisit').textContent = lastVisit
+          ? `Última: ${lastVisit.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`
+          : 'Sin visitas registradas';
+
+        $('statCalc').textContent = fmt(calcUses);
+        $('statCalc').classList.remove('stat-loading');
+
+        $('statWa').textContent = fmt(waClicks);
+        $('statWa').classList.remove('stat-loading');
+
+        $('statConv').textContent = conv + '%';
+        $('statConv').classList.remove('stat-loading');
+      } catch {
+        ['statPageviews','statCalc','statWa','statConv'].forEach(id => {
+          $(id).textContent = 'Error';
+          $(id).classList.remove('stat-loading');
+        });
+      }
+    }
+
+    async function loadVisits() {
+      const tbody = $('visitsBody');
+      try {
+        const q = query(
+          collection(db, 'analytics', 'events', 'visits'),
+          orderBy('ts', 'desc'),
+          limit(20)
+        );
+        const snap = await getDocs(q);
+        if (snap.empty) {
+          tbody.innerHTML = '<tr><td colspan="3" style="color:var(--muted);text-align:center;">Sin visitas registradas todavía.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = snap.docs.map(d => {
+          const v = d.data();
+          const date = v.ts?.toDate ? v.ts.toDate().toLocaleString('es-CO', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+          const page = v.page || '/';
+          const ref = v.ref || '';
+          const refHtml = ref
+            ? `<a class="ref-link" href="${ref}" target="_blank" rel="noopener" title="${ref}">${ref}</a>`
+            : '<span style="color:var(--muted)">Directo / sin referencia</span>';
+          return `<tr><td>${date}</td><td>${page}</td><td>${refHtml}</td></tr>`;
+        }).join('');
+      } catch {
+        tbody.innerHTML = '<tr><td colspan="3" style="color:var(--muted);text-align:center;">No se pudo cargar. Revisa permisos de Firestore.</td></tr>';
+      }
+    }
+
+    $('refreshVisits').addEventListener('click', () => { loadAnalytics(); loadVisits(); });
+
+    loadAnalytics();
+    loadVisits();
   </script>
 </body>
 </html>
