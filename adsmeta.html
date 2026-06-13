@@ -82,6 +82,12 @@
     .r-row strong { color: #B7F35A; font-family: monospace; font-size: .82rem; }
     .open-btn { display: inline-flex; align-items: center; gap: 9px; padding: 14px 26px; border-radius: 999px; background: var(--fb); color: #fff; font-weight: 800; margin-top: 18px; font-size: .95rem; transition: filter .2s; text-decoration: none; }
     .open-btn:hover { filter: brightness(1.12); }
+    .ai-box { background: linear-gradient(135deg, rgba(66,133,244,.08), rgba(52,168,83,.08)); border: 1px solid rgba(66,133,244,.22); border-radius: 18px; padding: 20px; margin-bottom: 20px; }
+    .ai-box h3 { margin: 0 0 4px; color: var(--navy); font-size: 1rem; display: flex; align-items: center; gap: 8px; }
+    .ai-box p  { margin: 0 0 14px; color: var(--muted); font-size: .84rem; line-height: 1.55; }
+    .btn-ai { background: linear-gradient(135deg, #4285F4, #34A853); color: #fff; box-shadow: 0 8px 22px rgba(66,133,244,.3); }
+    .ai-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; margin-right: 6px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
     @media (max-width: 580px) {
       .fg { grid-template-columns: 1fr; }
@@ -190,10 +196,26 @@
       <h2>Paso 3 — Configura tu campaña</h2>
       <p class="sub">Completa los datos. La campaña se creará en estado <strong>pausado</strong> para que la revises en Ads Manager antes de activarla.</p>
 
+      <!-- Generador IA -->
+      <div class="ai-box">
+        <h3>✨ Generar textos con IA (Gemini)</h3>
+        <p>Describe tu negocio y objetivo, y la IA escribirá el título, texto y CTA del anuncio automáticamente.</p>
+        <div class="fg">
+          <label class="full">Describe tu negocio y qué quieres lograr con el anuncio
+            <textarea id="aiPrompt" rows="3" placeholder="Ej: Soy Grupo Consultor C&amp;C, ayudamos a empresas e independientes en Colombia a gestionar su seguridad social (EPS, pensión, ARL). Quiero conseguir leads de personas que necesiten asesoría."></textarea>
+          </label>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <button class="btn btn-ai" id="btnAI" onclick="generateWithAI()">✨ Generar con IA</button>
+          <span id="aiStatus" style="font-size:.84rem;color:var(--muted);"></span>
+        </div>
+        <div id="alertAI"></div>
+      </div>
+
       <div class="fg">
 
         <label class="full">Nombre de la campaña
-          <input id="campaignName" type="text" placeholder="Ej: Seguridad Social — Leads Junio 2026" />
+          <input id="campaignName" type="text" placeholder="Ej: Seguridad Social — Leads Junio 2026" value="Seguridad Social — Leads Junio 2026" />
         </label>
 
         <label>Objetivo
@@ -242,17 +264,17 @@
         </label>
 
         <label class="full">Título del anuncio <span style="font-weight:500;color:var(--muted)">(máx. 40 caracteres)</span>
-          <input id="adTitle" type="text" maxlength="40" placeholder="¿Estás pagando bien la seguridad social?" oninput="countChars('adTitle','cTitle',40)" />
+          <input id="adTitle" type="text" maxlength="40" placeholder="¿Estás pagando bien la seguridad social?" value="¿Estás pagando bien la seguridad social?" oninput="countChars('adTitle','cTitle',40)" />
           <div class="char-count" id="cTitle">0 / 40</div>
         </label>
 
         <label class="full">Texto principal del anuncio <span style="font-weight:500;color:var(--muted)">(máx. 125 caracteres)</span>
-          <textarea id="adBody" maxlength="125" placeholder="Calcula y gestiona tus aportes correctamente. Evita sanciones de la UGPP. ¡Escríbenos!" oninput="countChars('adBody','cBody',125)"></textarea>
+          <textarea id="adBody" maxlength="125" placeholder="Calcula y gestiona tus aportes correctamente. Evita sanciones de la UGPP. ¡Escríbenos!" oninput="countChars('adBody','cBody',125)">Calcula y gestiona tus aportes correctamente. Evita sanciones de la UGPP. ¡Escríbenos!</textarea>
           <div class="char-count" id="cBody">0 / 125</div>
         </label>
 
         <label class="full">Descripción del botón CTA <span style="font-weight:500;color:var(--muted)">(máx. 30 caracteres)</span>
-          <input id="adDesc" type="text" maxlength="30" placeholder="Ej: Asesoría gratuita" oninput="countChars('adDesc','cDesc',30)" />
+          <input id="adDesc" type="text" maxlength="30" placeholder="Ej: Asesoría gratuita" value="Asesoría gratuita" oninput="countChars('adDesc','cDesc',30)" />
           <div class="char-count" id="cDesc">0 / 30</div>
         </label>
 
@@ -496,6 +518,69 @@
     TOKEN = ''; ACCOUNT_ID = '';
     document.getElementById('tokenInput').value = '';
     goTo(1);
+  }
+
+  // Inicializar contadores con valores precargados
+  countChars('adTitle', 'cTitle', 40);
+  countChars('adBody',  'cBody',  125);
+  countChars('adDesc',  'cDesc',  30);
+
+  /* ── Generador IA con Gemini ──────────────────────────────────────── */
+  const GEMINI_KEY = 'PEGA_AQUI_TU_API_KEY_DE_GEMINI';
+
+  async function generateWithAI() {
+    const prompt = document.getElementById('aiPrompt').value.trim();
+    if (!prompt) { alert_('alertAI','err','Describe tu negocio antes de generar.'); return; }
+
+    const btn = document.getElementById('btnAI');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="ai-spinner"></span>Generando...';
+    document.getElementById('aiStatus').textContent = '';
+    document.getElementById('alertAI').className = 'hidden';
+
+    const fullPrompt = `Eres un experto en publicidad digital en Facebook Ads para el mercado colombiano.
+Basándote en esta descripción de negocio: "${prompt}"
+
+Genera exactamente en formato JSON (sin markdown, sin explicaciones, solo el JSON):
+{
+  "titulo": "título del anuncio máximo 40 caracteres, directo y que genere necesidad",
+  "texto": "texto principal máximo 125 caracteres, conversacional, con urgencia y beneficio claro",
+  "cta": "descripción del botón máximo 30 caracteres, acción concreta",
+  "nombre_campana": "nombre descriptivo de la campaña máximo 50 caracteres"
+}`;
+
+    try {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: fullPrompt }] }] })
+        }
+      );
+      const data = await res.json();
+      if (data.error) throw new Error(data.error.message);
+
+      const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const jsonMatch = raw.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error('La IA no devolvió JSON válido. Intenta de nuevo.');
+      const result = JSON.parse(jsonMatch[0]);
+
+      document.getElementById('adTitle').value      = result.titulo      || '';
+      document.getElementById('adBody').value       = result.texto       || '';
+      document.getElementById('adDesc').value       = result.cta         || '';
+      document.getElementById('campaignName').value = result.nombre_campana || '';
+      countChars('adTitle','cTitle',40);
+      countChars('adBody','cBody',125);
+      countChars('adDesc','cDesc',30);
+
+      alert_('alertAI','ok','✅ ¡Textos generados! Revísalos y edítalos si quieres antes de crear la campaña.');
+      document.getElementById('aiStatus').textContent = '';
+    } catch(e) {
+      alert_('alertAI','err',`❌ Error al generar: ${e.message}`);
+    }
+    btn.disabled = false;
+    btn.innerHTML = '✨ Generar con IA';
   }
 </script>
 </body>
