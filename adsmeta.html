@@ -393,9 +393,16 @@
       }
       if (d.metaToken) {
         document.getElementById('tokenInput').value = d.metaToken;
-      }
-      if (d.groqKey || d.metaToken) {
-        alert_('alertStep1', 'ok', '✅ Credenciales cargadas desde Firebase. ' + (d.metaToken ? 'Verifica el token de Meta (puede haber expirado).' : ''));
+        TOKEN = d.metaToken;
+        // Intentar cargar cuentas directamente sin verificar (token puede estar vivo)
+        try {
+          await loadAccounts();
+          alert_('alertStep1', 'ok', '✅ Token de Meta cargado desde Firebase. Si falla algo, el token expiró → genera uno nuevo en el Graph API Explorer.');
+        } catch(e) {
+          alert_('alertStep1', 'warn', '⚠️ Token de Meta cargado pero parece haber expirado. Genera uno nuevo en el Graph API Explorer.');
+        }
+      } else if (d.groqKey) {
+        alert_('alertStep1', 'ok', '✅ Groq Key cargada desde Firebase.');
       }
     } catch(e) {}
   }
