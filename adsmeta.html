@@ -489,8 +489,9 @@
     try {
       /* 1. Campaign */
       alert_('alertStep3','info','⏳ 1/3 — Creando campaña...');
+      console.log('[Meta] Campaign payload:', { name, objective: obj, status: 'PAUSED', special_ad_categories: [] });
       const c = await post(`/${ACCOUNT_ID}/campaigns`, {
-        name, objective: obj, status: 'PAUSED', special_ad_categories: []
+        name, objective: obj, status: 'PAUSED', special_ad_categories: [], buying_type: 'AUCTION'
       });
       if (c.error) throw new Error(`Campaña: ${c.error.message}`);
 
@@ -501,14 +502,15 @@
         campaign_id: c.id,
         daily_budget: String(budget * 100),
         billing_event: 'IMPRESSIONS',
+        bid_strategy: 'LOWEST_COST_WITHOUT_CAP',
         optimization_goal: obj === 'OUTCOME_LEADS' ? 'LEAD_GENERATION'
                          : obj === 'OUTCOME_SALES'  ? 'OFFSITE_CONVERSIONS'
                          : 'LINK_CLICKS',
         targeting: { geo_locations: { countries: [geo] }, age_min: ageMin, age_max: ageMax },
-        start_time: Math.floor(new Date(start).getTime() / 1000),
+        start_time: new Date(start).toISOString(),
         status: 'PAUSED'
       };
-      if (end) adsetPayload.end_time = Math.floor(new Date(end).getTime() / 1000);
+      if (end) adsetPayload.end_time = new Date(end).toISOString();
       const s = await post(`/${ACCOUNT_ID}/adsets`, adsetPayload);
       if (s.error) throw new Error(`AdSet: ${s.error.message}`);
 
@@ -557,10 +559,20 @@
 
   /* ── Helpers ─────────────────────────────────────────────────────── */
   async function post(path, body) {
+    const params = new URLSearchParams();
+    params.append('access_token', TOKEN);
+    for (const [key, value] of Object.entries(body)) {
+      if (value === undefined || value === null) continue;
+      if (typeof value === 'object') {
+        params.append(key, JSON.stringify(value));
+      } else {
+        params.append(key, String(value));
+      }
+    }
     const res = await fetch(`${API}${path}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...body, access_token: TOKEN })
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params
     });
     return res.json();
   }
