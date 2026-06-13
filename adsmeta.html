@@ -589,7 +589,7 @@
       const adsetPayload = {
         name: `${name} — AdSet`,
         campaign_id: c.id,
-        daily_budget: String(budget * 100),
+        daily_budget: String(budget),
         billing_event: 'IMPRESSIONS',
         bid_strategy: 'LOWEST_COST_WITHOUT_CAP',
         optimization_goal: obj === 'OUTCOME_LEADS' ? 'LEAD_GENERATION'
