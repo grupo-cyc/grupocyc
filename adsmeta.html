@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Creador de Anuncios Meta | Grupo Consultor C&C</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy: #0A2342; --green: #8CC63F; --cyan: #00B4D8;
+      --purple: #5B4FE9; --fb: #1877F2; --wa: #25D366;
+      --light: #F4F7F9; --white: #fff; --text: #263445;
+      --muted: #65758B; --danger: #D62828;
+      --shadow: 0 18px 45px rgba(10,35,66,.12); --radius: 22px;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Poppins', sans-serif; color: var(--text); background: var(--light); }
+    .layout { max-width: 900px; margin: 0 auto; padding: 36px 20px 60px; }
+    .page-header { text-align: center; margin-bottom: 36px; }
+    .page-header h1 { color: var(--navy); font-size: clamp(1.8rem, 4vw, 2.8rem); margin: 0 0 10px; letter-spacing: -1px; }
+    .page-header p { color: var(--muted); margin: 0; line-height: 1.7; max-width: 580px; margin: 0 auto; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; background: rgba(24,119,242,.12); color: var(--fb); font-weight: 800; font-size: .82rem; margin-bottom: 14px; letter-spacing: .3px; text-transform: uppercase; }
+
+    /* Steps */
+    .steps-nav { display: flex; gap: 0; margin-bottom: 32px; border-radius: var(--radius); overflow: hidden; background: var(--white); box-shadow: var(--shadow); }
+    .step-tab { flex: 1; padding: 16px 10px; text-align: center; font-weight: 700; font-size: .82rem; color: var(--muted); border-right: 1px solid #EEF3F8; cursor: default; transition: background .2s; position: relative; }
+    .step-tab:last-child { border-right: none; }
+    .step-tab.active { background: var(--navy); color: var(--white); }
+    .step-tab.done { background: rgba(140,198,63,.15); color: #2F7D32; }
+    .step-tab .step-num { display: block; font-size: 1.2rem; font-weight: 900; }
+
+    /* Cards */
+    .card { background: var(--white); border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow); border: 1px solid rgba(10,35,66,.06); margin-bottom: 22px; }
+    .card h2 { color: var(--navy); margin: 0 0 6px; font-size: 1.3rem; }
+    .card > p { color: var(--muted); margin: 0 0 22px; line-height: 1.65; }
+    .hidden { display: none !important; }
+
+    /* Forms */
+    .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    label { display: grid; gap: 6px; color: var(--navy); font-weight: 700; font-size: .88rem; }
+    input, select, textarea { width: 100%; border: 1px solid #D9E2EC; border-radius: 14px; padding: 13px 14px; font: inherit; color: var(--text); background: #fff; outline: none; transition: border-color .2s, box-shadow .2s; }
+    input:focus, select:focus, textarea:focus { border-color: var(--cyan); box-shadow: 0 0 0 4px rgba(0,180,216,.12); }
+    textarea { resize: vertical; min-height: 90px; }
+    .full { grid-column: 1 / -1; }
+
+    /* Buttons */
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; border: 0; border-radius: 999px; padding: 14px 26px; font: inherit; font-weight: 800; cursor: pointer; transition: transform .2s, box-shadow .2s; font-size: .95rem; }
+    .btn:hover { transform: translateY(-2px); }
+    .btn-green { background: var(--green); color: var(--navy); box-shadow: 0 8px 22px rgba(140,198,63,.32); }
+    .btn-fb { background: var(--fb); color: var(--white); box-shadow: 0 8px 22px rgba(24,119,242,.32); }
+    .btn-navy { background: var(--navy); color: var(--white); box-shadow: 0 8px 22px rgba(10,35,66,.22); }
+    .btn-danger { background: var(--danger); color: var(--white); }
+    .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+    .actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 22px; }
+
+    /* Status / alert */
+    .alert { padding: 14px 18px; border-radius: 16px; font-weight: 700; font-size: .88rem; line-height: 1.55; margin-top: 14px; }
+    .alert.ok { background: rgba(140,198,63,.15); color: #2F7D32; border: 1px solid rgba(140,198,63,.3); }
+    .alert.error { background: rgba(214,40,40,.1); color: var(--danger); border: 1px solid rgba(214,40,40,.22); }
+    .alert.info { background: rgba(0,180,216,.1); color: #0077A0; border: 1px solid rgba(0,180,216,.22); }
+    .alert.warn { background: rgba(255,183,3,.15); color: #7A5600; border: 1px solid rgba(255,183,3,.3); }
+
+    /* Token display */
+    .token-box { font-family: monospace; font-size: .78rem; background: #F4F7F9; border: 1px solid #D9E2EC; border-radius: 12px; padding: 12px 14px; word-break: break-all; color: var(--text); margin-top: 12px; max-height: 80px; overflow-y: auto; }
+
+    /* Setup guide */
+    .setup-steps { display: grid; gap: 16px; margin-top: 4px; }
+    .setup-step { display: grid; grid-template-columns: 42px 1fr; gap: 14px; align-items: start; padding: 16px; background: #F8FAFC; border-radius: 16px; border: 1px solid #E3EEF7; }
+    .setup-num { width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center; background: var(--navy); color: var(--white); font-weight: 900; font-size: 1.1rem; flex-shrink: 0; }
+    .setup-step h4 { margin: 0 0 4px; color: var(--navy); }
+    .setup-step p { margin: 0; color: var(--muted); font-size: .88rem; line-height: 1.55; }
+    .setup-step a { color: var(--fb); font-weight: 700; }
+    .setup-step code { background: rgba(24,119,242,.1); color: var(--fb); padding: 2px 7px; border-radius: 6px; font-size: .82rem; }
+
+    /* Result preview */
+    .result-preview { background: linear-gradient(135deg, var(--navy), #0B416B); color: var(--white); border-radius: 22px; padding: 26px; margin-top: 18px; }
+    .result-preview h3 { margin: 0 0 16px; font-size: 1.15rem; color: rgba(255,255,255,.85); }
+    .result-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.1); font-size: .88rem; }
+    .result-row:last-child { border-bottom: none; }
+    .result-row span { color: rgba(255,255,255,.65); }
+    .result-row strong { color: #B7F35A; }
+    .copy-id { cursor: pointer; font-size: .75rem; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,.15); color: var(--white); border: none; font-family: inherit; font-weight: 700; }
+    .copy-id:hover { background: rgba(255,255,255,.28); }
+
+    /* Ads Manager link */
+    .adsmanager-link { display: inline-flex; align-items: center; gap: 10px; padding: 16px 24px; border-radius: 999px; background: var(--fb); color: var(--white); font-weight: 800; margin-top: 18px; transition: filter .2s; }
+    .adsmanager-link:hover { filter: brightness(1.12); }
+
+    @media (max-width: 620px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .steps-nav { flex-direction: column; border-radius: 16px; }
+      .step-tab { border-right: none; border-bottom: 1px solid #EEF3F8; }
+      .step-tab:last-child { border-bottom: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+
+    <div class="page-header">
+      <span class="eyebrow">📢 Meta Marketing API</span>
+      <h1>Creador de Anuncios para Facebook</h1>
+      <p>Conecta tu cuenta de Meta, completa los datos de tu campaña y lánzala directamente a Ads Manager sin salir de aquí.</p>
+    </div>
+
+    <!-- Tabs de progreso -->
+    <div class="steps-nav">
+      <div class="step-tab active" id="tab1"><span class="step-num">1</span>Configurar App</div>
+      <div class="step-tab" id="tab2"><span class="step-num">2</span>Conectar Meta</div>
+      <div class="step-tab" id="tab3"><span class="step-num">3</span>Crear campaña</div>
+      <div class="step-tab" id="tab4"><span class="step-num">4</span>Resultado</div>
+    </div>
+
+    <!-- ─── PASO 1: Configurar App ID ─────────────────────────────────── -->
+    <div id="step1">
+      <div class="card">
+        <h2>Paso 1 — Registra tu App en Meta for Developers</h2>
+        <p>Necesitas una App de Meta aprobada con el permiso <strong>ads_management</strong>. Solo se hace una vez.</p>
+        <div class="setup-steps">
+          <div class="setup-step">
+            <div class="setup-num">1</div>
+            <div>
+              <h4>Crea tu App de Meta</h4>
+              <p>Ve a <a href="https://developers.facebook.com/apps" target="_blank" rel="noopener">developers.facebook.com/apps</a> → "Crear app" → elige tipo <code>Negocios</code>.</p>
+            </div>
+          </div>
+          <div class="setup-step">
+            <div class="setup-num">2</div>
+            <div>
+              <h4>Agrega el producto "Marketing API"</h4>
+              <p>Dentro de tu app, ve a "Agregar producto" → busca <code>Marketing API</code> → configúralo. Esto da acceso a los endpoints de campañas.</p>
+            </div>
+          </div>
+          <div class="setup-step">
+            <div class="setup-num">3</div>
+            <div>
+              <h4>Agrega dominio OAuth válido</h4>
+              <p>En "Configuración" → "Básica", agrega en <code>Dominios de la app</code> el dominio desde donde abrirás este HTML (ej: <code>localhost</code> o tu dominio real). En "Facebook Login" → "Configuración" agrega la URL completa de este archivo como URI de redireccionamiento válido.</p>
+            </div>
+          </div>
+          <div class="setup-step">
+            <div class="setup-num">4</div>
+            <div>
+              <h4>Solicita el permiso ads_management</h4>
+              <p>Ve a "Revisión de la app" → "Permisos y funciones" → solicita <code>ads_management</code> y <code>ads_read</code>. Meta puede tardar días en aprobarlos. Mientras tanto, puedes probar con tu propia cuenta (modo desarrollo).</p>
+            </div>
+          </div>
+          <div class="setup-step">
+            <div class="setup-num">5</div>
+            <div>
+              <h4>Copia tu App ID</h4>
+              <p>En "Configuración" → "Básica" verás el <code>ID de la app</code>. Pégalo aquí abajo para continuar.</p>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:24px;">
+          <label>Tu App ID de Meta
+            <input id="appIdInput" type="text" placeholder="Ej: 1234567890123456" />
+          </label>
+          <div id="alertStep1" class="alert info" style="margin-top:12px;">💡 En modo desarrollo solo puedes crear campañas en tu propia cuenta de Meta. Para usar con clientes necesitas aprobación de Meta.</div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-navy" onclick="goToStep2()">Continuar con este App ID →</button>
+          <a href="https://developers.facebook.com/apps" target="_blank" rel="noopener" class="btn btn-fb">Ir a Meta for Developers ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── PASO 2: OAuth / Login con Facebook ───────────────────────── -->
+    <div id="step2" class="hidden">
+      <div class="card">
+        <h2>Paso 2 — Conectar tu cuenta de Meta</h2>
+        <p>Al hacer clic en el botón, se abrirá la ventana de autorización de Facebook. Acepta los permisos para que esta herramienta pueda crear campañas en tu Ads Manager.</p>
+        <div id="alertStep2" class="alert info">Haz clic en el botón para iniciar sesión con Facebook y autorizar el acceso a tu cuenta publicitaria.</div>
+        <div class="actions">
+          <button class="btn btn-fb" id="btnLogin" onclick="startOAuth()">
+            <span>f</span> Conectar con Facebook
+          </button>
+          <button class="btn" style="background:#eee;color:var(--navy);" onclick="goTo(1)">← Atrás</button>
+        </div>
+      </div>
+
+      <div class="card hidden" id="tokenCard">
+        <h2>✅ Cuenta conectada</h2>
+        <p>Token de acceso obtenido. Ahora selecciona la cuenta publicitaria donde se creará la campaña.</p>
+        <label>Cuenta publicitaria (Ad Account ID)
+          <select id="adAccountSelect"><option value="">Cargando cuentas...</option></select>
+        </label>
+        <div id="alertAccount" class="alert info" style="margin-top:12px;display:none;"></div>
+        <div class="token-box" id="tokenDisplay"></div>
+        <div class="actions">
+          <button class="btn btn-green" onclick="goToStep3()">Continuar → Crear campaña</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── PASO 3: Crear Campaña ─────────────────────────────────────── -->
+    <div id="step3" class="hidden">
+      <div class="card">
+        <h2>Paso 3 — Configura tu campaña</h2>
+        <p>Completa los datos. Se creará la campaña, el conjunto de anuncios y el anuncio en tu Ads Manager.</p>
+
+        <div class="form-grid">
+          <label class="full">Nombre de la campaña
+            <input id="campaignName" type="text" placeholder="Ej: Seguridad Social - Leads Junio 2026" />
+          </label>
+
+          <label>Objetivo
+            <select id="campaignObjective">
+              <option value="OUTCOME_LEADS">Generación de leads</option>
+              <option value="OUTCOME_TRAFFIC">Tráfico al sitio web</option>
+              <option value="OUTCOME_AWARENESS">Reconocimiento de marca</option>
+              <option value="OUTCOME_ENGAGEMENT">Interacción</option>
+              <option value="OUTCOME_SALES">Ventas / Conversiones</option>
+            </select>
+          </label>
+
+          <label>Presupuesto diario (COP)
+            <input id="dailyBudget" type="number" min="5000" step="1000" placeholder="Ej: 20000" />
+          </label>
+
+          <label>Fecha de inicio
+            <input id="startDate" type="date" />
+          </label>
+
+          <label>Fecha de fin (opcional)
+            <input id="endDate" type="date" />
+          </label>
+
+          <label>País / ubicación objetivo
+            <select id="geoLocation">
+              <option value="CO">Colombia</option>
+              <option value="MX">México</option>
+              <option value="US">Estados Unidos</option>
+              <option value="AR">Argentina</option>
+              <option value="CL">Chile</option>
+              <option value="PE">Perú</option>
+            </select>
+          </label>
+
+          <label>Edad mínima
+            <input id="ageMin" type="number" min="18" max="65" value="25" />
+          </label>
+
+          <label>Edad máxima
+            <input id="ageMax" type="number" min="18" max="65" value="55" />
+          </label>
+
+          <label class="full">URL de destino (sitio web o WhatsApp)
+            <input id="destinationUrl" type="url" placeholder="https://wa.me/573154967667 o tu sitio web" />
+          </label>
+
+          <label class="full">Título del anuncio (máx. 40 caracteres)
+            <input id="adTitle" type="text" maxlength="40" placeholder="Ej: ¿Estás pagando bien la seguridad social?" />
+          </label>
+
+          <label class="full">Texto principal del anuncio (máx. 125 caracteres)
+            <textarea id="adBody" maxlength="125" placeholder="Ej: Calcula y gestiona tus aportes correctamente. Evita sanciones de la UGPP. ¡Escríbenos ahora!"></textarea>
+          </label>
+
+          <label class="full">Descripción del enlace (máx. 30 caracteres)
+            <input id="adLinkDesc" type="text" maxlength="30" placeholder="Ej: Asesoría gratuita" />
+          </label>
+
+          <div class="full">
+            <div class="alert warn">⚠️ <strong>Imagen del anuncio:</strong> La API de Meta requiere subir la imagen desde el propio Business Manager o mediante un hash de imagen subida previamente. Para el primer anuncio, crea la imagen directamente en <a href="https://www.facebook.com/adsmanager" target="_blank" rel="noopener" style="color:var(--fb);">Ads Manager</a> y usa el ID aquí, o déjalo en blanco para crear la campaña sin creative (puedes agregarlo después).</div>
+          </div>
+
+          <label class="full">Image Hash (opcional — desde tu biblioteca de medios de Meta)
+            <input id="imageHash" type="text" placeholder="Ej: 8f4e2a1b3c... (opcional)" />
+          </label>
+        </div>
+
+        <div id="alertStep3" class="alert hidden"></div>
+        <div class="actions">
+          <button class="btn btn-green" id="btnCreate" onclick="createCampaign()">🚀 Crear campaña en Ads Manager</button>
+          <button class="btn" style="background:#eee;color:var(--navy);" onclick="goTo(2)">← Atrás</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── PASO 4: Resultado ─────────────────────────────────────────── -->
+    <div id="step4" class="hidden">
+      <div class="card">
+        <h2>🎉 ¡Campaña creada!</h2>
+        <p>Tu campaña fue enviada a Meta Ads Manager. Puedes verla y activarla desde el siguiente enlace.</p>
+        <div class="result-preview" id="resultPreview"></div>
+        <div style="text-align:center;">
+          <a class="adsmanager-link" id="adsManagerLink" href="https://www.facebook.com/adsmanager" target="_blank" rel="noopener">
+            Abrir en Ads Manager →
+          </a>
+        </div>
+        <div class="alert info" style="margin-top:18px;">La campaña se crea en estado <strong>PAUSED</strong> por defecto. Actívala en Ads Manager cuando estés listo.</div>
+        <div class="actions" style="margin-top:6px;">
+          <button class="btn btn-navy" onclick="resetAll()">Crear otra campaña</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /layout -->
+
+  <script>
+    /* ─── Estado global ───────────────────────────────────────────────── */
+    let APP_ID = '';
+    let ACCESS_TOKEN = '';
+    let AD_ACCOUNT_ID = '';
+
+    /* ─── Navegación entre pasos ──────────────────────────────────────── */
+    function goTo(step) {
+      [1,2,3,4].forEach(n => {
+        document.getElementById(`step${n}`).classList.toggle('hidden', n !== step);
+        const tab = document.getElementById(`tab${n}`);
+        tab.classList.remove('active','done');
+        if (n === step) tab.classList.add('active');
+        if (n < step) tab.classList.add('done');
+      });
+    }
+
+    function goToStep2() {
+      const val = document.getElementById('appIdInput').value.trim();
+      if (!val || !/^\d{10,20}$/.test(val)) {
+        showAlert('alertStep1', 'error', 'Ingresa un App ID válido (solo números, 10-20 dígitos).');
+        return;
+      }
+      APP_ID = val;
+      goTo(2);
+    }
+
+    function goToStep3() {
+      if (!AD_ACCOUNT_ID) {
+        showAlert('alertAccount', 'error', 'Selecciona una cuenta publicitaria.');
+        document.getElementById('alertAccount').style.display = '';
+        return;
+      }
+      const today = new Date().toISOString().slice(0,10);
+      document.getElementById('startDate').value = today;
+      goTo(3);
+    }
+
+    /* ─── Alertas ─────────────────────────────────────────────────────── */
+    function showAlert(id, type, msg) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.className = `alert ${type}`;
+      el.textContent = msg;
+      el.classList.remove('hidden');
+      el.style.display = '';
+    }
+
+    /* ─── OAuth: abrir popup de login de Meta ─────────────────────────── */
+    function startOAuth() {
+      const redirectUri = encodeURIComponent(window.location.href.split('?')[0].split('#')[0]);
+      const scope = encodeURIComponent('ads_management,ads_read,business_management');
+      const state = Math.random().toString(36).slice(2);
+      sessionStorage.setItem('oauth_state', state);
+      const url = `https://www.facebook.com/dialog/oauth?client_id=${APP_ID}&redirect_uri=${redirectUri}&scope=${scope}&response_type=token&state=${state}`;
+      window.location.href = url;
+    }
+
+    /* ─── Leer token desde hash de URL (flujo implícito OAuth) ───────── */
+    function readTokenFromHash() {
+      const hash = window.location.hash.replace('#','');
+      if (!hash) return;
+      const params = Object.fromEntries(new URLSearchParams(hash));
+      if (params.access_token) {
+        ACCESS_TOKEN = params.access_token;
+        history.replaceState(null, '', window.location.pathname);
+        document.getElementById('tokenDisplay').textContent = ACCESS_TOKEN.slice(0,30) + '... (oculto por seguridad)';
+        document.getElementById('tokenCard').classList.remove('hidden');
+        showAlert('alertStep2', 'ok', '✅ Autenticación exitosa. Selecciona tu cuenta publicitaria.');
+        loadAdAccounts();
+        goTo(2);
+      } else if (params.error) {
+        showAlert('alertStep2', 'error', `Error OAuth: ${params.error_description || params.error}`);
+        goTo(2);
+      }
+    }
+
+    /* ─── Cargar cuentas publicitarias ───────────────────────────────── */
+    async function loadAdAccounts() {
+      try {
+        const res = await fetch(`https://graph.facebook.com/v20.0/me/adaccounts?fields=id,name,account_status&access_token=${ACCESS_TOKEN}`);
+        const data = await res.json();
+        if (data.error) { showAlert('alertAccount', 'error', data.error.message); document.getElementById('alertAccount').style.display=''; return; }
+        const sel = document.getElementById('adAccountSelect');
+        sel.innerHTML = '<option value="">-- Selecciona una cuenta --</option>';
+        (data.data || []).forEach(acc => {
+          const opt = document.createElement('option');
+          opt.value = acc.id;
+          opt.textContent = `${acc.name} (${acc.id})`;
+          sel.appendChild(opt);
+        });
+        sel.addEventListener('change', () => { AD_ACCOUNT_ID = sel.value; });
+        if (data.data?.length === 0) {
+          showAlert('alertAccount', 'warn', 'No se encontraron cuentas publicitarias asociadas a este perfil. Asegúrate de tener un Business Manager configurado.');
+          document.getElementById('alertAccount').style.display='';
+        }
+      } catch (e) {
+        showAlert('alertAccount', 'error', 'No se pudo cargar las cuentas. Verifica conexión y permisos.');
+        document.getElementById('alertAccount').style.display='';
+      }
+    }
+
+    /* ─── Crear Campaña → AdSet → Ad ──────────────────────────────────── */
+    async function createCampaign() {
+      const btn = document.getElementById('btnCreate');
+      btn.disabled = true;
+      btn.textContent = 'Creando...';
+
+      const campaignName = document.getElementById('campaignName').value.trim();
+      const objective    = document.getElementById('campaignObjective').value;
+      const dailyBudget  = parseInt(document.getElementById('dailyBudget').value) || 0;
+      const startDate    = document.getElementById('startDate').value;
+      const endDate      = document.getElementById('endDate').value;
+      const geo          = document.getElementById('geoLocation').value;
+      const ageMin       = parseInt(document.getElementById('ageMin').value) || 18;
+      const ageMax       = parseInt(document.getElementById('ageMax').value) || 65;
+      const destUrl      = document.getElementById('destinationUrl').value.trim();
+      const adTitle      = document.getElementById('adTitle').value.trim();
+      const adBody       = document.getElementById('adBody').value.trim();
+      const adLinkDesc   = document.getElementById('adLinkDesc').value.trim();
+      const imageHash    = document.getElementById('imageHash').value.trim();
+
+      if (!campaignName || !dailyBudget || !destUrl || !adTitle || !adBody) {
+        showAlert('alertStep3', 'error', 'Completa todos los campos obligatorios: nombre, presupuesto, URL, título y texto del anuncio.');
+        btn.disabled = false; btn.textContent = '🚀 Crear campaña en Ads Manager'; return;
+      }
+
+      const base = `https://graph.facebook.com/v20.0`;
+      const token = ACCESS_TOKEN;
+      const account = AD_ACCOUNT_ID;
+
+      try {
+        /* 1. Crear Campaign */
+        showAlert('alertStep3', 'info', '1/3 Creando campaña...');
+        const campRes = await fetch(`${base}/${account}/campaigns`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: campaignName,
+            objective,
+            status: 'PAUSED',
+            special_ad_categories: [],
+            access_token: token
+          })
+        });
+        const campData = await campRes.json();
+        if (campData.error) throw new Error(`Campaña: ${campData.error.message}`);
+        const campaignId = campData.id;
+
+        /* 2. Crear AdSet */
+        showAlert('alertStep3', 'info', '2/3 Creando conjunto de anuncios...');
+        const startTs = Math.floor(new Date(startDate).getTime() / 1000);
+        const adsetBody = {
+          name: `${campaignName} — AdSet`,
+          campaign_id: campaignId,
+          daily_budget: String(dailyBudget * 100),
+          billing_event: 'IMPRESSIONS',
+          optimization_goal: objective === 'OUTCOME_LEADS' ? 'LEAD_GENERATION' : 'LINK_CLICKS',
+          targeting: {
+            geo_locations: { countries: [geo] },
+            age_min: ageMin,
+            age_max: ageMax
+          },
+          start_time: startTs,
+          status: 'PAUSED',
+          access_token: token
+        };
+        if (endDate) adsetBody.end_time = Math.floor(new Date(endDate).getTime() / 1000);
+
+        const adsetRes = await fetch(`${base}/${account}/adsets`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(adsetBody)
+        });
+        const adsetData = await adsetRes.json();
+        if (adsetData.error) throw new Error(`AdSet: ${adsetData.error.message}`);
+        const adsetId = adsetData.id;
+
+        /* 3. Crear AdCreative + Ad */
+        showAlert('alertStep3', 'info', '3/3 Creando el anuncio...');
+        const creative = {
+          name: `${campaignName} — Creative`,
+          object_story_spec: {
+            page_id: await getPageId(token),
+            link_data: {
+              link: destUrl,
+              message: adBody,
+              name: adTitle,
+              description: adLinkDesc
+            }
+          },
+          access_token: token
+        };
+        if (imageHash) creative.object_story_spec.link_data.image_hash = imageHash;
+
+        const creativeRes = await fetch(`${base}/${account}/adcreatives`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(creative)
+        });
+        const creativeData = await creativeRes.json();
+        if (creativeData.error) throw new Error(`Creative: ${creativeData.error.message}`);
+
+        const adRes = await fetch(`${base}/${account}/ads`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: `${campaignName} — Anuncio`,
+            adset_id: adsetId,
+            creative: { creative_id: creativeData.id },
+            status: 'PAUSED',
+            access_token: token
+          })
+        });
+        const adData = await adRes.json();
+        if (adData.error) throw new Error(`Ad: ${adData.error.message}`);
+
+        /* Éxito */
+        showResult({ campaignId, adsetId, adId: adData.id, campaignName, objective, dailyBudget, geo, account });
+        goTo(4);
+
+      } catch (err) {
+        showAlert('alertStep3', 'error', `❌ ${err.message}`);
+        btn.disabled = false; btn.textContent = '🚀 Crear campaña en Ads Manager';
+      }
+    }
+
+    async function getPageId(token) {
+      try {
+        const res = await fetch(`https://graph.facebook.com/v20.0/me/accounts?access_token=${token}`);
+        const data = await res.json();
+        return data.data?.[0]?.id || '0';
+      } catch { return '0'; }
+    }
+
+    function showResult({ campaignId, adsetId, adId, campaignName, objective, dailyBudget, geo, account }) {
+      const preview = document.getElementById('resultPreview');
+      const accNum = account.replace('act_','');
+      document.getElementById('adsManagerLink').href = `https://www.facebook.com/adsmanager/manage/campaigns?act=${accNum}`;
+      preview.innerHTML = `
+        <h3>Resumen de lo creado</h3>
+        <div class="result-row"><span>Campaña</span><strong>${campaignName}</strong></div>
+        <div class="result-row"><span>Objetivo</span><strong>${objective}</strong></div>
+        <div class="result-row"><span>Presupuesto diario</span><strong>$${dailyBudget.toLocaleString('es-CO')} COP</strong></div>
+        <div class="result-row"><span>País</span><strong>${geo}</strong></div>
+        <div class="result-row"><span>Estado</span><strong>⏸ PAUSED (lista para activar)</strong></div>
+        <div class="result-row"><span>Campaign ID</span><strong><code style="font-size:.75rem;color:#B7F35A">${campaignId}</code></strong></div>
+        <div class="result-row"><span>AdSet ID</span><strong><code style="font-size:.75rem;color:#B7F35A">${adsetId}</code></strong></div>
+        <div class="result-row"><span>Ad ID</span><strong><code style="font-size:.75rem;color:#B7F35A">${adId}</code></strong></div>
+      `;
+    }
+
+    function resetAll() {
+      ACCESS_TOKEN = ''; AD_ACCOUNT_ID = '';
+      document.getElementById('campaignName').value = '';
+      goTo(1);
+    }
+
+    /* ─── Init ────────────────────────────────────────────────────────── */
+    readTokenFromHash();
+  </script>
+</body>
+</html>
