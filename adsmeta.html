@@ -634,13 +634,33 @@
   }
 
   /* ── Helpers ─────────────────────────────────────────────────────── */
+  function serializeParam(key, value, params) {
+    if (value === undefined || value === null) return;
+    if (Array.isArray(value)) {
+      value.forEach((item, i) => {
+        serializeParam(`${key}[${i}]`, item, params);
+      });
+    } else if (typeof value === 'object' && value !== null) {
+      for (const [subKey, subVal] of Object.entries(value)) {
+        serializeParam(`${key}[${subKey}]`, subVal, params);
+      }
+    } else {
+      params.append(key, String(value));
+    }
+  }
+
   async function post(path, body) {
-    const url = `${API}${path}?access_token=${encodeURIComponent(TOKEN)}`;
-    console.log('[Meta POST JSON]', url, 'Body keys:', Object.keys(body));
+    const params = new URLSearchParams();
+    params.append('access_token', TOKEN);
+    for (const [key, value] of Object.entries(body)) {
+      serializeParam(key, value, params);
+    }
+    const url = `${API}${path}`;
+    console.log('[Meta POST]', url, 'Params:', Object.fromEntries(params.entries()));
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params
     });
     const data = await res.json();
     if (data.error) {
