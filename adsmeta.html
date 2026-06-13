@@ -328,16 +328,17 @@
         </label>
 
         <div class="full">
-          <div class="alert warn">
-            ⚠️ <strong>Imagen del anuncio:</strong> La API de Meta no permite subir imágenes nuevas directamente desde aquí. Tienes 2 opciones:<br>
-            <strong>Opción A</strong> — Deja el campo vacío: la campaña se crea sin imagen (puedes agregarla desde Ads Manager).<br>
-            <strong>Opción B</strong> — Sube tu imagen primero en <a href="https://www.facebook.com/adsmanager" target="_blank" rel="noopener" style="color:var(--fb);">Ads Manager → Biblioteca de medios</a>, copia el <em>Image Hash</em> y pégalo aquí.
+          <div class="alert info">
+            📷 <strong>Imagen del anuncio:</strong> Sube una imagen desde tu computadora. Se comprimirá automáticamente para cumplir los requisitos de Meta.
           </div>
         </div>
 
-        <label class="full">Image Hash <span style="font-weight:500;color:var(--muted)">(opcional)</span>
-          <input id="imageHash" type="text" placeholder="Ej: 8f4e2a1b3c9d... (de tu biblioteca de medios de Meta)" />
+        <label class="full">Subir imagen <span style="font-weight:500;color:var(--muted)">(JPG/PNG, recomendado 1200×628 px)</span>
+          <input id="adImageFile" type="file" accept="image/jpeg,image/png,image/webp" onchange="previewImage(this)" />
         </label>
+        <img id="adImagePreview" style="display:none; max-width:200px; margin-top:8px; border-radius:6px; border:1px solid #ddd;" />
+        <div id="imageUploadStatus" style="margin-top:6px; font-size:0.9rem; color:var(--muted);"></div>
+        <input type="hidden" id="imageHash" />
 
       </div><!-- /fg -->
 
@@ -353,7 +354,7 @@
   <div id="step4" class="hidden">
     <div class="card">
       <h2>🎉 ¡Campaña creada exitosamente!</h2>
-      <p class="sub">Está en estado <strong>PAUSADO</strong>. Entra a Ads Manager, revísala, agrega la imagen si no la pusiste, y actívala cuando estés listo.</p>
+      <p class="sub">Está en estado <strong>PAUSADO</strong>. Entra a Ads Manager, revísala y actívala cuando estés listo.</p>
       <div class="result-box" id="resultBox"></div>
       <div style="text-align:center;">
         <a class="open-btn" id="adsLink" href="https://www.facebook.com/adsmanager" target="_blank" rel="noopener">
@@ -555,7 +556,7 @@
     const title   = document.getElementById('adTitle').value.trim();
     const body    = document.getElementById('adBody').value.trim();
     const desc    = document.getElementById('adDesc').value.trim();
-    const imgHash = document.getElementById('imageHash').value.trim();
+    let imgHash = document.getElementById('imageHash').value.trim();
     const abMode  = document.getElementById('abMode').checked;
     const variants = window._aiVariants || [];
     const interests = window._aiInterests || [];
@@ -569,6 +570,14 @@
     btn.textContent = 'Creando...';
 
     try {
+      /* 0. Subir imagen si se seleccionó localmente */
+      if (window._adImageBlob && !imgHash) {
+        alert_('alertStep3','info','⏳ Subiendo imagen a Meta...');
+        imgHash = await uploadImageToMeta(window._adImageBlob);
+        if (!imgHash) throw new Error('Meta no devolvió hash de imagen');
+        document.getElementById('imageHash').value = imgHash;
+      }
+
       /* 1. Campaign */
       alert_('alertStep3','info','⏳ 1/4 — Creando campaña...');
       const c = await post(`/${ACCOUNT_ID}/campaigns`, {
@@ -898,6 +907,72 @@ Genera un anuncio de Facebook Ads. Responde EXCLUSIVAMENTE con este JSON (sin ma
     btn.innerHTML = '✨ Generar con IA';
   }
 
+  /* ── Image helpers ───────────────────────────────────────────────── */
+  function compressImage(file, maxWidth, maxHeight) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          let w = img.width, h = img.height;
+          if (w > maxWidth) { h = h * (maxWidth / w); w = maxWidth; }
+          if (h > maxHeight) { w = w * (maxHeight / h); h = maxHeight; }
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(w);
+          canvas.height = Math.round(h);
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob(blob => resolve(blob), 'image/jpeg', 0.85);
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function previewImage(input) {
+    const file = input.files[0];
+    const preview = document.getElementById('adImagePreview');
+    const status = document.getElementById('imageUploadStatus');
+    if (!file) {
+      preview.style.display = 'none';
+      status.textContent = '';
+      window._adImageBlob = null;
+      return;
+    }
+    status.textContent = '⏳ Comprimiendo...';
+    compressImage(file, 1200, 628).then(blob => {
+      window._adImageBlob = blob;
+      preview.src = URL.createObjectURL(blob);
+      preview.style.display = 'block';
+      status.textContent = `✅ Imagen lista: ${(blob.size/1024).toFixed(1)} KB. Se subirá al crear la campaña.`;
+    }).catch(err => {
+      status.textContent = `❌ Error: ${err.message}`;
+      preview.style.display = 'none';
+      window._adImageBlob = null;
+    });
+  }
+
+  async function uploadImageToMeta(blob) {
+    const formData = new FormData();
+    formData.append('file', blob, 'ad-image.jpg');
+    const url = `${API}/${ACCOUNT_ID}/adimages?access_token=${encodeURIComponent(TOKEN)}`;
+    console.log('[Meta UPLOAD]', url);
+    const res = await fetch(url, { method: 'POST', body: formData });
+    const data = await res.json();
+    if (data.error) {
+      console.error('[Meta ERROR full]', JSON.stringify(data.error, null, 2));
+      throw new Error(data.error.message);
+    }
+    const images = data.images || {};
+    const firstKey = Object.keys(images)[0];
+    return images[firstKey]?.hash || '';
+  }
+
   /* ── Exponer funciones a window (necesario por ser módulo) ─────── */
   window.goTo = goTo;
   window.verifyToken = verifyToken;
@@ -910,6 +985,7 @@ Genera un anuncio de Facebook Ads. Responde EXCLUSIVAMENTE con este JSON (sin ma
   window.selectVariant = selectVariant;
   window.applyAIBudget = applyAIBudget;
   window.toggleSandboxMode = toggleSandboxMode;
+  window.previewImage = previewImage;
 
   /* ── Init ─────────────────────────────────────────── */
   loadCredentials();
