@@ -161,10 +161,10 @@
         <label>Token de acceso de Meta (del Graph API Explorer)
           <input id="tokenInput" type="password" placeholder="EAABsbCS...token largo de Meta..." autocomplete="off" />
         </label>
-        <label style="margin-top:14px;">API Key de Google Gemini (para generar textos con IA)
-          <input id="geminiInput" type="password" placeholder="AIza...tu clave de Gemini..." autocomplete="off" />
+        <label style="margin-top:14px;">API Key de Groq (para generar textos con IA)
+          <input id="groqInput" type="password" placeholder="gsk_...tu clave de Groq..." autocomplete="off" />
         </label>
-        <div class="alert info" style="margin-top:10px;">� Puedes guardar la <strong>Gemini Key</strong> en Firebase para no buscarla cada vez (es permanente). El <strong>token de Meta</strong> también se guarda, pero expira cada ~1 hora.</div>
+        <div class="alert info" style="margin-top:10px;">� Puedes guardar la <strong>Groq Key</strong> en Firebase para no buscarla cada vez (es permanente). El <strong>token de Meta</strong> también se guarda, pero expira cada ~1 hora.</div>
       </div>
 
       <div class="actions">
@@ -202,7 +202,7 @@
 
       <!-- Generador IA -->
       <div class="ai-box">
-        <h3>✨ Generar textos con IA (Gemini)</h3>
+        <h3>✨ Generar textos con IA (Groq)</h3>
         <p>La IA ya conoce a Grupo Consultor C&C y su estrategia. Solo haz clic en "Generar" o añade un enfoque específico para esta campaña.</p>
         <div class="fg">
           <label class="full">Enfoque de esta campaña <span style="font-weight:500;color:var(--muted)">(opcional — la IA ya conoce el negocio)</span>
@@ -342,7 +342,7 @@
 
   let TOKEN = '';
   let ACCOUNT_ID = '';
-  let GEMINI_KEY = '';
+  let GROQ_KEY = '';
   const API = 'https://graph.facebook.com/v20.0';
 
   /* ── Cargar credenciales guardadas desde Firestore ───────────────── */
@@ -351,14 +351,14 @@
       const snap = await getDoc(credsRef);
       if (!snap.exists()) return;
       const d = snap.data();
-      if (d.geminiKey) {
-        GEMINI_KEY = d.geminiKey;
-        document.getElementById('geminiInput').value = d.geminiKey;
+      if (d.groqKey) {
+        GROQ_KEY = d.groqKey;
+        document.getElementById('groqInput').value = d.groqKey;
       }
       if (d.metaToken) {
         document.getElementById('tokenInput').value = d.metaToken;
       }
-      if (d.geminiKey || d.metaToken) {
+      if (d.groqKey || d.metaToken) {
         alert_('alertStep1', 'ok', '✅ Credenciales cargadas desde Firebase. ' + (d.metaToken ? 'Verifica el token de Meta (puede haber expirado).' : ''));
       }
     } catch(e) {}
@@ -366,14 +366,14 @@
 
   /* ── Guardar credenciales en Firestore ───────────────────────────── */
   async function saveCredentials() {
-    const gKey  = document.getElementById('geminiInput').value.trim();
+    const gKey  = document.getElementById('groqInput').value.trim();
     const mToken = document.getElementById('tokenInput').value.trim();
     if (!gKey && !mToken) { alert_('alertStep1','err','No hay nada que guardar. Pega al menos una credencial.'); return; }
     const btn = document.getElementById('btnSaveCreds');
     btn.disabled = true; btn.textContent = 'Guardando...';
     try {
       const payload = { updatedAt: serverTimestamp() };
-      if (gKey)   { payload.geminiKey = gKey; GEMINI_KEY = gKey; }
+      if (gKey)   { payload.groqKey = gKey; GROQ_KEY = gKey; }
       if (mToken) payload.metaToken = mToken;
       await setDoc(credsRef, payload, { merge: true });
       alert_('alertStep1','ok','✅ Credenciales guardadas en Firebase. La próxima vez se cargarán solas.');
@@ -584,11 +584,11 @@
   countChars('adBody',  'cBody',  125);
   countChars('adDesc',  'cDesc',  30);
 
-  /* ── Generador IA con Gemini ──────────────────────────────────────── */
+  /* ── Generador IA con Groq ──────────────────────────────────────── */
   async function generateWithAI() {
     const prompt = document.getElementById('aiPrompt').value.trim();
-    if (!GEMINI_KEY) GEMINI_KEY = document.getElementById('geminiInput').value.trim();
-    if (!GEMINI_KEY) { alert_('alertAI','err','Pega tu API Key de Gemini en el Paso 1 (y guárdala en Firebase para no repetir).'); return; }
+    if (!GROQ_KEY) GROQ_KEY = document.getElementById('groqInput').value.trim();
+    if (!GROQ_KEY) { alert_('alertAI','err','Pega tu API Key de Groq en el Paso 1 (y guárdala en Firebase para no repetir).'); return; }
 
     const btn = document.getElementById('btnAI');
     btn.disabled = true;
@@ -614,18 +614,23 @@ Genera un anuncio de Facebook Ads. Responde EXCLUSIVAMENTE con este JSON (sin ma
 }`;
 
     try {
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: fullPrompt }] }] })
-        }
-      );
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${GROQ_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          messages: [{ role: 'user', content: fullPrompt }],
+          temperature: 0.7,
+          max_tokens: 512
+        })
+      });
       const data = await res.json();
-      if (data.error) throw new Error(data.error.message);
+      if (data.error) throw new Error(data.error?.message || JSON.stringify(data.error));
 
-      const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const raw = data.choices?.[0]?.message?.content || '';
       const jsonMatch = raw.match(/\{[\s\S]*\}/);
       if (!jsonMatch) throw new Error('La IA no devolvió JSON válido. Intenta de nuevo.');
       const result = JSON.parse(jsonMatch[0]);
