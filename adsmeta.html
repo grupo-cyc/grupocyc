@@ -158,14 +158,18 @@
       </div>
 
       <div style="margin-top:22px;">
-        <label>Token de acceso (del Graph API Explorer)
+        <label>Token de acceso de Meta (del Graph API Explorer)
           <input id="tokenInput" type="password" placeholder="EAABsbCS...token largo de Meta..." autocomplete="off" />
         </label>
-        <div class="alert info" style="margin-top:10px;">🔒 El token nunca sale de tu navegador. No se guarda en ningún servidor.</div>
+        <label style="margin-top:14px;">API Key de Google Gemini (para generar textos con IA)
+          <input id="geminiInput" type="password" placeholder="AIza...tu clave de Gemini..." autocomplete="off" />
+        </label>
+        <div class="alert info" style="margin-top:10px;">� Puedes guardar la <strong>Gemini Key</strong> en Firebase para no buscarla cada vez (es permanente). El <strong>token de Meta</strong> también se guarda, pero expira cada ~1 hora.</div>
       </div>
 
       <div class="actions">
         <button class="btn btn-fb" onclick="verifyToken()">Verificar token →</button>
+        <button class="btn btn-navy" id="btnSaveCreds" onclick="saveCredentials()">💾 Guardar en Firebase</button>
         <a class="btn btn-ghost" href="https://developers.facebook.com/tools/explorer" target="_blank" rel="noopener">Abrir Explorer ↗</a>
       </div>
       <div id="alertStep1"></div>
@@ -199,10 +203,10 @@
       <!-- Generador IA -->
       <div class="ai-box">
         <h3>✨ Generar textos con IA (Gemini)</h3>
-        <p>Describe tu negocio y objetivo, y la IA escribirá el título, texto y CTA del anuncio automáticamente.</p>
+        <p>La IA ya conoce a Grupo Consultor C&C y su estrategia. Solo haz clic en "Generar" o añade un enfoque específico para esta campaña.</p>
         <div class="fg">
-          <label class="full">Describe tu negocio y qué quieres lograr con el anuncio
-            <textarea id="aiPrompt" rows="3" placeholder="Ej: Soy Grupo Consultor C&amp;C, ayudamos a empresas e independientes en Colombia a gestionar su seguridad social (EPS, pensión, ARL). Quiero conseguir leads de personas que necesiten asesoría."></textarea>
+          <label class="full">Enfoque de esta campaña <span style="font-weight:500;color:var(--muted)">(opcional — la IA ya conoce el negocio)</span>
+            <textarea id="aiPrompt" rows="2" placeholder="Ej: Enfócate en independientes que no cotizan pensión. O: promociona la gestión de pagos extemporáneos. Déjalo vacío para un anuncio general."></textarea>
           </label>
         </div>
         <div style="margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
@@ -319,10 +323,65 @@
 
 </div><!-- /layout -->
 
-<script>
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js';
+  import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js';
+
+  const firebaseConfig = {
+    apiKey: 'AIzaSyCpVmdDTosviTAEnng2zYqzIqQMCurIG8c',
+    authDomain: 'grupocyc-e3de3.firebaseapp.com',
+    projectId: 'grupocyc-e3de3',
+    storageBucket: 'grupocyc-e3de3.firebasestorage.app',
+    messagingSenderId: '435864279886',
+    appId: '1:435864279886:web:e0f72df588ab9f1f711c1f',
+    measurementId: 'G-92B6E2Z2EH'
+  };
+  const fbApp = initializeApp(firebaseConfig);
+  const db = getFirestore(fbApp);
+  const credsRef = doc(db, 'settings', 'credentials');
+
   let TOKEN = '';
   let ACCOUNT_ID = '';
+  let GEMINI_KEY = '';
   const API = 'https://graph.facebook.com/v20.0';
+
+  /* ── Cargar credenciales guardadas desde Firestore ───────────────── */
+  async function loadCredentials() {
+    try {
+      const snap = await getDoc(credsRef);
+      if (!snap.exists()) return;
+      const d = snap.data();
+      if (d.geminiKey) {
+        GEMINI_KEY = d.geminiKey;
+        document.getElementById('geminiInput').value = d.geminiKey;
+      }
+      if (d.metaToken) {
+        document.getElementById('tokenInput').value = d.metaToken;
+      }
+      if (d.geminiKey || d.metaToken) {
+        alert_('alertStep1', 'ok', '✅ Credenciales cargadas desde Firebase. ' + (d.metaToken ? 'Verifica el token de Meta (puede haber expirado).' : ''));
+      }
+    } catch(e) {}
+  }
+
+  /* ── Guardar credenciales en Firestore ───────────────────────────── */
+  async function saveCredentials() {
+    const gKey  = document.getElementById('geminiInput').value.trim();
+    const mToken = document.getElementById('tokenInput').value.trim();
+    if (!gKey && !mToken) { alert_('alertStep1','err','No hay nada que guardar. Pega al menos una credencial.'); return; }
+    const btn = document.getElementById('btnSaveCreds');
+    btn.disabled = true; btn.textContent = 'Guardando...';
+    try {
+      const payload = { updatedAt: serverTimestamp() };
+      if (gKey)   { payload.geminiKey = gKey; GEMINI_KEY = gKey; }
+      if (mToken) payload.metaToken = mToken;
+      await setDoc(credsRef, payload, { merge: true });
+      alert_('alertStep1','ok','✅ Credenciales guardadas en Firebase. La próxima vez se cargarán solas.');
+    } catch(e) {
+      alert_('alertStep1','err',`❌ No se pudo guardar: ${e.message}. Revisa las reglas de Firestore para settings/credentials.`);
+    }
+    btn.disabled = false; btn.textContent = '💾 Guardar en Firebase';
+  }
 
   /* ── Navegación ──────────────────────────────────────────────────── */
   function goTo(n) {
@@ -526,11 +585,10 @@
   countChars('adDesc',  'cDesc',  30);
 
   /* ── Generador IA con Gemini ──────────────────────────────────────── */
-  const GEMINI_KEY = 'PEGA_AQUI_TU_API_KEY_DE_GEMINI';
-
   async function generateWithAI() {
     const prompt = document.getElementById('aiPrompt').value.trim();
-    if (!prompt) { alert_('alertAI','err','Describe tu negocio antes de generar.'); return; }
+    if (!GEMINI_KEY) GEMINI_KEY = document.getElementById('geminiInput').value.trim();
+    if (!GEMINI_KEY) { alert_('alertAI','err','Pega tu API Key de Gemini en el Paso 1 (y guárdala en Firebase para no repetir).'); return; }
 
     const btn = document.getElementById('btnAI');
     btn.disabled = true;
@@ -538,10 +596,16 @@
     document.getElementById('aiStatus').textContent = '';
     document.getElementById('alertAI').className = 'hidden';
 
-    const fullPrompt = `Eres un experto en publicidad digital en Facebook Ads para el mercado colombiano.
-Basándote en esta descripción de negocio: "${prompt}"
+    const enfoque = prompt ? `\n\nENFOQUE ESPECÍFICO DE ESTA CAMPAÑA: "${prompt}"` : '';
+    const fullPrompt = `Actúas como el redactor experto y asistente de comunicaciones corporativas de Grupo Consultor C&C, una empresa colombiana especializada en la gestión, asesoría y administración de servicios de seguridad social. Tu objetivo es redactar textos comerciales que reflejen autoridad, experiencia y confiabilidad dentro del mercado de servicios profesionales en Colombia.
 
-Genera exactamente en formato JSON (sin markdown, sin explicaciones, solo el JSON):
+PÚBLICO OBJETIVO: trabajadores independientes, empleados, contratistas y empleadores en Colombia que necesitan regularizar, gestionar o comprender sus pagos y afiliaciones al Sistema Integral de Seguridad Social. Muchos no conocen la ley a fondo, así que traduce términos complejos a lenguaje accesible sin perder rigor institucional.
+
+SERVICIOS: EPS/Salud (afiliaciones, traslados, acceso a tratamientos), ARL/Riesgos Laborales (cobertura ante accidentes y enfermedades laborales), Cajas de Compensación (subsidios, recreación, beneficios), Pensiones/AFP (asesoría para retiro y cotizaciones), Trámites Administrativos (liquidación de planillas, pagos extemporáneos, bloqueos informáticos, asesoría legal).
+
+GENERADOR DE NECESIDAD: enfoca la comunicación en la PREVENCIÓN. Resalta las consecuencias de no estar afiliado (accidentes sin cobertura, pérdida de subsidios, problemas en la vejez) y posiciona a Grupo Consultor C&C como el aliado experto "héroe" que resuelve y previene estas crisis, garantizando tranquilidad.${enfoque}
+
+Genera un anuncio de Facebook Ads. Responde EXCLUSIVAMENTE con este JSON (sin markdown, sin explicaciones, solo el JSON):
 {
   "titulo": "título del anuncio máximo 40 caracteres, directo y que genere necesidad",
   "texto": "texto principal máximo 125 caracteres, conversacional, con urgencia y beneficio claro",
@@ -582,6 +646,19 @@ Genera exactamente en formato JSON (sin markdown, sin explicaciones, solo el JSO
     btn.disabled = false;
     btn.innerHTML = '✨ Generar con IA';
   }
+
+  /* ── Exponer funciones a window (necesario por ser módulo) ─────── */
+  window.goTo = goTo;
+  window.verifyToken = verifyToken;
+  window.saveCredentials = saveCredentials;
+  window.goToStep3 = goToStep3;
+  window.createCampaign = createCampaign;
+  window.resetAll = resetAll;
+  window.generateWithAI = generateWithAI;
+  window.countChars = countChars;
+
+  /* ── Init ─────────────────────────────────────────── */
+  loadCredentials();
 </script>
 </body>
 </html>
