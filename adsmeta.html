@@ -89,6 +89,20 @@
     .ai-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; margin-right: 6px; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    .variant-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+    .variant-card { background: #fff; border: 2px solid #E3EEF7; border-radius: 14px; padding: 16px; cursor: pointer; transition: all .2s; position: relative; }
+    .variant-card:hover { border-color: var(--cyan); transform: translateY(-2px); }
+    .variant-card.selected { border-color: var(--green); background: rgba(140,198,63,.06); }
+    .variant-card .v-check { position: absolute; top: 10px; right: 10px; width: 22px; height: 22px; border-radius: 50%; border: 2px solid #D9E2EC; display: grid; place-items: center; font-size: .7rem; color: transparent; }
+    .variant-card.selected .v-check { background: var(--green); border-color: var(--green); color: #fff; }
+    .variant-card .v-label { font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .4px; color: var(--fb); margin-bottom: 8px; }
+    .variant-card .v-title { font-weight: 700; color: var(--navy); font-size: .9rem; margin-bottom: 6px; line-height: 1.4; }
+    .variant-card .v-body { color: var(--muted); font-size: .82rem; line-height: 1.5; margin-bottom: 8px; }
+    .variant-card .v-cta { display: inline-block; background: var(--navy); color: #fff; padding: 4px 10px; border-radius: 6px; font-size: .75rem; font-weight: 700; }
+    .audience-box, .budget-box { background: #F8FAFC; border: 1px solid #E3EEF7; border-radius: 14px; padding: 14px 16px; font-size: .88rem; }
+    .audience-box .tag { display: inline-flex; padding: 4px 10px; border-radius: 999px; background: rgba(24,119,242,.1); color: var(--fb); font-weight: 700; font-size: .78rem; margin: 3px; }
+    .ab-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: rgba(140,198,63,.12); color: #2A7D32; font-weight: 700; font-size: .75rem; }
+    @media (max-width: 720px) { .variant-grid { grid-template-columns: 1fr; } }
     @media (max-width: 580px) {
       .fg { grid-template-columns: 1fr; }
       .steps-bar { flex-direction: column; }
@@ -214,6 +228,28 @@
           <span id="aiStatus" style="font-size:.84rem;color:var(--muted);"></span>
         </div>
         <div id="alertAI"></div>
+      </div>
+
+      <!-- Modo inteligente -->
+      <div class="ai-box" style="margin-top:16px;background:linear-gradient(135deg,rgba(140,198,63,.08),rgba(0,180,216,.08));border-color:rgba(140,198,63,.22);">
+        <h3>🧠 Modo inteligente</h3>
+        <p>La IA generará múltiples variantes de anuncio y sugerirá audiencia y presupuesto óptimo.</p>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:.9rem;margin-top:4px;">
+          <input type="checkbox" id="abMode" checked style="width:auto;" />
+          <span><strong>A/B Testing automático</strong> — Crear 3 anuncios con textos diferentes para que Meta descubra cuál funciona mejor</span>
+        </label>
+      </div>
+
+      <!-- Resultados de IA -->
+      <div id="aiResults" class="hidden">
+        <h3 style="margin:20px 0 10px;color:var(--navy);font-size:1.05rem;">🎯 Variantes generadas por IA</h3>
+        <div id="variantCards" class="variant-grid"></div>
+
+        <h3 style="margin:20px 0 10px;color:var(--navy);font-size:1.05rem;">👥 Audiencia sugerida</h3>
+        <div id="aiAudience" class="audience-box"></div>
+
+        <h3 style="margin:20px 0 10px;color:var(--navy);font-size:1.05rem;">💰 Presupuesto sugerido</h3>
+        <div id="aiBudget" class="budget-box"></div>
       </div>
 
       <div class="fg">
@@ -477,6 +513,9 @@
     const body    = document.getElementById('adBody').value.trim();
     const desc    = document.getElementById('adDesc').value.trim();
     const imgHash = document.getElementById('imageHash').value.trim();
+    const abMode  = document.getElementById('abMode').checked;
+    const variants = window._aiVariants || [];
+    const interests = window._aiInterests || [];
 
     if (!name || !budget || !url || !title || !body) {
       alert_('alertStep3','err','⚠️ Completa todos los campos obligatorios: nombre, presupuesto, URL, título y texto del anuncio.');
@@ -488,15 +527,16 @@
 
     try {
       /* 1. Campaign */
-      alert_('alertStep3','info','⏳ 1/3 — Creando campaña...');
-      console.log('[Meta] Campaign payload:', { name, objective: obj, status: 'PAUSED', special_ad_categories: [] });
+      alert_('alertStep3','info','⏳ 1/4 — Creando campaña...');
       const c = await post(`/${ACCOUNT_ID}/campaigns`, {
         name, objective: obj, status: 'PAUSED', special_ad_categories: [], buying_type: 'AUCTION'
       });
       if (c.error) throw new Error(`Campaña: ${c.error.message}`);
 
       /* 2. AdSet */
-      alert_('alertStep3','info','⏳ 2/3 — Creando conjunto de anuncios...');
+      alert_('alertStep3','info','⏳ 2/4 — Creando conjunto de anuncios...');
+      const targeting = { geo_locations: { countries: [geo] }, age_min: ageMin, age_max: ageMax };
+      if (interests.length) targeting.interests = interests.map(i => ({ id: i, name: i }));
       const adsetPayload = {
         name: `${name} — AdSet`,
         campaign_id: c.id,
@@ -506,7 +546,7 @@
         optimization_goal: obj === 'OUTCOME_LEADS' ? 'LEAD_GENERATION'
                          : obj === 'OUTCOME_SALES'  ? 'OFFSITE_CONVERSIONS'
                          : 'LINK_CLICKS',
-        targeting: { geo_locations: { countries: [geo] }, age_min: ageMin, age_max: ageMax },
+        targeting,
         start_time: new Date(start).toISOString(),
         status: 'PAUSED'
       };
@@ -514,31 +554,58 @@
       const s = await post(`/${ACCOUNT_ID}/adsets`, adsetPayload);
       if (s.error) throw new Error(`AdSet: ${s.error.message}`);
 
-      /* 3. AdCreative */
-      alert_('alertStep3','info','⏳ 3/3 — Creando el anuncio...');
+      /* 3. AdCreative + Ad */
       const pageId = await getPageId();
-      const linkData = { link: url, message: body, name: title, description: desc };
-      if (imgHash) linkData.image_hash = imgHash;
-      const cr = await post(`/${ACCOUNT_ID}/adcreatives`, {
-        name: `${name} — Creative`,
-        object_story_spec: { page_id: pageId, link_data: linkData }
-      });
-      if (cr.error) throw new Error(`Creative: ${cr.error.message}`);
+      let adsCreated = [];
 
-      /* 4. Ad */
-      const ad = await post(`/${ACCOUNT_ID}/ads`, {
-        name: `${name} — Anuncio`,
-        adset_id: s.id,
-        creative: { creative_id: cr.id },
-        status: 'PAUSED'
-      });
-      if (ad.error) throw new Error(`Anuncio: ${ad.error.message}`);
+      if (abMode && variants.length >= 2) {
+        alert_('alertStep3','info',`⏳ 3/4 — Creando ${variants.length} anuncios A/B...`);
+        for (let i = 0; i < variants.length; i++) {
+          const v = variants[i];
+          const linkData = { link: url, message: v.texto || body, name: v.titulo || title, description: v.cta || desc };
+          if (imgHash) linkData.image_hash = imgHash;
+          const cr = await post(`/${ACCOUNT_ID}/adcreatives`, {
+            name: `${name} — Creative ${i+1} (${v.angulo || 'v'+ (i+1)})`,
+            object_story_spec: { page_id: pageId, link_data: linkData }
+          });
+          if (cr.error) throw new Error(`Creative ${i+1}: ${cr.error.message}`);
 
-      /* Mostrar resultado */
+          const ad = await post(`/${ACCOUNT_ID}/ads`, {
+            name: `${name} — Anuncio ${i+1}`,
+            adset_id: s.id,
+            creative: { creative_id: cr.id },
+            status: 'PAUSED'
+          });
+          if (ad.error) throw new Error(`Ad ${i+1}: ${ad.error.message}`);
+          adsCreated.push(ad);
+        }
+      } else {
+        alert_('alertStep3','info','⏳ 3/4 — Creando el anuncio...');
+        const linkData = { link: url, message: body, name: title, description: desc };
+        if (imgHash) linkData.image_hash = imgHash;
+        const cr = await post(`/${ACCOUNT_ID}/adcreatives`, {
+          name: `${name} — Creative`,
+          object_story_spec: { page_id: pageId, link_data: linkData }
+        });
+        if (cr.error) throw new Error(`Creative: ${cr.error.message}`);
+
+        const ad = await post(`/${ACCOUNT_ID}/ads`, {
+          name: `${name} — Anuncio`,
+          adset_id: s.id,
+          creative: { creative_id: cr.id },
+          status: 'PAUSED'
+        });
+        if (ad.error) throw new Error(`Anuncio: ${ad.error.message}`);
+        adsCreated.push(ad);
+      }
+
+      /* 4. Resultado */
+      alert_('alertStep3','info','⏳ 4/4 — Finalizando...');
       const accNum = ACCOUNT_ID.replace('act_','');
       document.getElementById('adsLink').href = `https://www.facebook.com/adsmanager/manage/campaigns?act=${accNum}`;
+      const abBadge = abMode && adsCreated.length > 1 ? `<span class="ab-badge">🧪 A/B Testing (${adsCreated.length} variantes)</span>` : '';
       document.getElementById('resultBox').innerHTML = `
-        <h3>Resumen</h3>
+        <h3>Resumen ${abBadge}</h3>
         <div class="r-row"><span>Campaña</span><strong>${name}</strong></div>
         <div class="r-row"><span>Objetivo</span><strong>${obj}</strong></div>
         <div class="r-row"><span>Presupuesto diario</span><strong>$${budget.toLocaleString('es-CO')} COP</strong></div>
@@ -546,7 +613,9 @@
         <div class="r-row"><span>Estado</span><strong>⏸ PAUSADO — actívala en Ads Manager</strong></div>
         <div class="r-row"><span>Campaign ID</span><strong>${c.id}</strong></div>
         <div class="r-row"><span>AdSet ID</span><strong>${s.id}</strong></div>
-        <div class="r-row"><span>Ad ID</span><strong>${ad.id}</strong></div>
+        <div class="r-row"><span>Anuncios creados</span><strong>${adsCreated.length}</strong></div>
+        ${adsCreated.map((a, i) => `<div class="r-row"><span>Ad ${i+1} ID</span><strong>${a.id}</strong></div>`).join('')}
+        ${interests.length ? `<div class="r-row"><span>Intereses de targeting</span><strong>${interests.join(', ')}</strong></div>` : ''}
       `;
       goTo(4);
 
@@ -596,6 +665,33 @@
   countChars('adBody',  'cBody',  125);
   countChars('adDesc',  'cDesc',  30);
 
+  /* ── Helpers de UI ─────────────────────────────────────────────── */
+  function esc(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function selectVariant(idx) {
+    const cards = document.querySelectorAll('.variant-card');
+    cards.forEach((c, i) => {
+      c.classList.toggle('selected', i === idx);
+      c.querySelector('.v-check').textContent = i === idx ? '✓' : '';
+    });
+    const selected = cards[idx];
+    if (!selected) return;
+    document.getElementById('adTitle').value = selected.dataset.title || '';
+    document.getElementById('adBody').value  = selected.dataset.body  || '';
+    document.getElementById('adDesc').value  = selected.dataset.cta   || '';
+    countChars('adTitle','cTitle',40);
+    countChars('adBody','cBody',125);
+    countChars('adDesc','cDesc',30);
+  }
+
+  function applyAIBudget(amount) {
+    document.getElementById('dailyBudget').value = amount;
+    alert_('alertAI','ok',`Presupuesto aplicado: $${Number(amount).toLocaleString('es-CO')} COP`);
+  }
+
   /* ── Generador IA con Groq ──────────────────────────────────────── */
   async function generateWithAI() {
     const prompt = document.getElementById('aiPrompt').value.trim();
@@ -603,13 +699,47 @@
     if (!GROQ_KEY) { alert_('alertAI','err','Pega tu API Key de Groq en el Paso 1 (y guárdala en Firebase para no repetir).'); return; }
 
     const btn = document.getElementById('btnAI');
+    const abMode = document.getElementById('abMode').checked;
     btn.disabled = true;
     btn.innerHTML = '<span class="ai-spinner"></span>Generando...';
     document.getElementById('aiStatus').textContent = '';
     document.getElementById('alertAI').className = 'hidden';
+    document.getElementById('aiResults').classList.add('hidden');
 
     const enfoque = prompt ? `\n\nENFOQUE ESPECÍFICO DE ESTA CAMPAÑA: "${prompt}"` : '';
-    const fullPrompt = `Actúas como el redactor experto y asistente de comunicaciones corporativas de Grupo Consultor C&C, una empresa colombiana especializada en la gestión, asesoría y administración de servicios de seguridad social. Tu objetivo es redactar textos comerciales que reflejen autoridad, experiencia y confiabilidad dentro del mercado de servicios profesionales en Colombia.
+
+    let fullPrompt;
+    if (abMode) {
+      fullPrompt = `Actúas como el redactor experto y asistente de comunicaciones corporativas de Grupo Consultor C&C, una empresa colombiana especializada en la gestión, asesoría y administración de servicios de seguridad social. Tu objetivo es redactar textos comerciales que reflejen autoridad, experiencia y confiabilidad dentro del mercado de servicios profesionales en Colombia.
+
+PÚBLICO OBJETIVO: trabajadores independientes, empleados, contratistas y empleadores en Colombia que necesitan regularizar, gestionar o comprender sus pagos y afiliaciones al Sistema Integral de Seguridad Social. Muchos no conocen la ley a fondo, así que traduce términos complejos a lenguaje accesible sin perder rigor institucional.
+
+SERVICIOS: EPS/Salud (afiliaciones, traslados, acceso a tratamientos), ARL/Riesgos Laborales (cobertura ante accidentes y enfermedades laborales), Cajas de Compensación (subsidios, recreación, beneficios), Pensiones/AFP (asesoría para retiro y cotizaciones), Trámites Administrativos (liquidación de planillas, pagos extemporáneos, bloqueos informáticos, asesoría legal).
+
+GENERADOR DE NECESIDAD: enfoca la comunicación en la PREVENCIÓN. Resalta las consecuencias de no estar afiliado (accidentes sin cobertura, pérdida de subsidios, problemas en la vejez) y posiciona a Grupo Consultor C&C como el aliado experto "héroe" que resuelve y previene estas crisis, garantizando tranquilidad.${enfoque}
+
+Genera 3 VARIANTES de anuncio de Facebook Ads. Cada variante debe usar un ángulo diferente:
+- Variante 1: ÁNGULO DE PREVENCIÓN (miedo a las consecuencias de no estar afiliado)
+- Variante 2: ÁNGULO DE BENEFICIO (qué gana el usuario al afiliarse/trabajar con C&C)
+- Variante 3: ÁNGULO DE URGENCIA/ESCASEZ (tiempo limitado, oportunidad que se pierde)
+
+Además, sugiere:
+- 3 a 5 INTERESES de audiencia de Facebook relevantes (en español, nombres que Facebook Ads reconozca)
+- 1 PRESUPUESTO DIARIO SUGERIDO en COP (número entero, basado en mercado colombiano de seguridad social)
+
+Responde EXCLUSIVAMENTE con este JSON:
+{
+  "variantes": [
+    {"titulo": "máx 40 chars", "texto": "máx 125 chars", "cta": "máx 30 chars", "angulo": "prevención"},
+    {"titulo": "máx 40 chars", "texto": "máx 125 chars", "cta": "máx 30 chars", "angulo": "beneficio"},
+    {"titulo": "máx 40 chars", "texto": "máx 125 chars", "cta": "máx 30 chars", "angulo": "urgencia"}
+  ],
+  "intereses": ["interés 1", "interés 2", "interés 3"],
+  "presupuesto_sugerido_cop": 25000,
+  "justificacion": "breve explicación"
+}`;
+    } else {
+      fullPrompt = `Actúas como el redactor experto y asistente de comunicaciones corporativas de Grupo Consultor C&C, una empresa colombiana especializada en la gestión, asesoría y administración de servicios de seguridad social. Tu objetivo es redactar textos comerciales que reflejen autoridad, experiencia y confiabilidad dentro del mercado de servicios profesionales en Colombia.
 
 PÚBLICO OBJETIVO: trabajadores independientes, empleados, contratistas y empleadores en Colombia que necesitan regularizar, gestionar o comprender sus pagos y afiliaciones al Sistema Integral de Seguridad Social. Muchos no conocen la ley a fondo, así que traduce términos complejos a lenguaje accesible sin perder rigor institucional.
 
@@ -624,6 +754,7 @@ Genera un anuncio de Facebook Ads. Responde EXCLUSIVAMENTE con este JSON (sin ma
   "cta": "descripción del botón máximo 30 caracteres, acción concreta",
   "nombre_campana": "nombre descriptivo de la campaña máximo 50 caracteres"
 }`;
+    }
 
     try {
       const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -635,8 +766,8 @@ Genera un anuncio de Facebook Ads. Responde EXCLUSIVAMENTE con este JSON (sin ma
         body: JSON.stringify({
           model: 'llama-3.3-70b-versatile',
           messages: [{ role: 'user', content: fullPrompt }],
-          temperature: 0.7,
-          max_tokens: 512
+          temperature: 0.8,
+          max_tokens: abMode ? 1024 : 512
         })
       });
       const data = await res.json();
@@ -647,15 +778,54 @@ Genera un anuncio de Facebook Ads. Responde EXCLUSIVAMENTE con este JSON (sin ma
       if (!jsonMatch) throw new Error('La IA no devolvió JSON válido. Intenta de nuevo.');
       const result = JSON.parse(jsonMatch[0]);
 
-      document.getElementById('adTitle').value      = result.titulo      || '';
-      document.getElementById('adBody').value       = result.texto       || '';
-      document.getElementById('adDesc').value       = result.cta         || '';
-      document.getElementById('campaignName').value = result.nombre_campana || '';
-      countChars('adTitle','cTitle',40);
-      countChars('adBody','cBody',125);
-      countChars('adDesc','cDesc',30);
+      if (abMode) {
+        const vars = result.variantes || [];
+        document.getElementById('variantCards').innerHTML = vars.map((v, i) => `
+          <div class="variant-card ${i === 0 ? 'selected' : ''}" onclick="selectVariant(${i})" data-index="${i}" data-title="${esc(v.titulo)}" data-body="${esc(v.texto)}" data-cta="${esc(v.cta)}">
+            <div class="v-check">${i === 0 ? '✓' : ''}</div>
+            <div class="v-label">${esc(v.angulo || 'Variante ' + (i+1))}</div>
+            <div class="v-title">${esc(v.titulo)}</div>
+            <div class="v-body">${esc(v.texto)}</div>
+            <div class="v-cta">${esc(v.cta)}</div>
+          </div>
+        `).join('');
 
-      alert_('alertAI','ok','✅ ¡Textos generados! Revísalos y edítalos si quieres antes de crear la campaña.');
+        const interests = result.intereses || [];
+        document.getElementById('aiAudience').innerHTML = interests.length
+          ? interests.map(i => `<span class="tag">${esc(i)}</span>`).join('')
+          : '<span style="color:var(--muted);">Sin sugerencias de audiencia</span>';
+
+        const sugBudget = result.presupuesto_sugerido_cop || 20000;
+        document.getElementById('aiBudget').innerHTML = `
+          <strong style="color:var(--navy);font-size:1.1rem;">$${Number(sugBudget).toLocaleString('es-CO')} COP</strong>
+          <span style="color:var(--muted);margin-left:8px;">${esc(result.justificacion || '')}</span>
+          <div style="margin-top:8px;">
+            <button class="btn btn-navy" style="padding:8px 16px;font-size:.8rem;" onclick="applyAIBudget(${sugBudget})">Aplicar presupuesto sugerido</button>
+          </div>
+        `;
+
+        const first = vars[0] || {};
+        document.getElementById('adTitle').value = first.titulo || '';
+        document.getElementById('adBody').value  = first.texto || '';
+        document.getElementById('adDesc').value  = first.cta   || '';
+        countChars('adTitle','cTitle',40);
+        countChars('adBody','cBody',125);
+        countChars('adDesc','cDesc',30);
+
+        window._aiVariants = vars;
+        window._aiInterests = interests;
+        document.getElementById('aiResults').classList.remove('hidden');
+        alert_('alertAI','ok','✅ 3 variantes generadas. Selecciona una o deja todas para A/B testing.');
+      } else {
+        document.getElementById('adTitle').value      = result.titulo      || '';
+        document.getElementById('adBody').value       = result.texto       || '';
+        document.getElementById('adDesc').value       = result.cta         || '';
+        document.getElementById('campaignName').value = result.nombre_campana || '';
+        countChars('adTitle','cTitle',40);
+        countChars('adBody','cBody',125);
+        countChars('adDesc','cDesc',30);
+        alert_('alertAI','ok','✅ ¡Textos generados! Revísalos y edítalos si quieres antes de crear la campaña.');
+      }
       document.getElementById('aiStatus').textContent = '';
     } catch(e) {
       alert_('alertAI','err',`❌ Error al generar: ${e.message}`);
@@ -673,6 +843,8 @@ Genera un anuncio de Facebook Ads. Responde EXCLUSIVAMENTE con este JSON (sin ma
   window.resetAll = resetAll;
   window.generateWithAI = generateWithAI;
   window.countChars = countChars;
+  window.selectVariant = selectVariant;
+  window.applyAIBudget = applyAIBudget;
 
   /* ── Init ─────────────────────────────────────────── */
   loadCredentials();
