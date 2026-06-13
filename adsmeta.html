@@ -536,7 +536,7 @@
       /* 1. Campaign */
       alert_('alertStep3','info','⏳ 1/4 — Creando campaña...');
       const c = await post(`/${ACCOUNT_ID}/campaigns`, {
-        name, objective: obj, status: 'PAUSED'
+        name, objective: obj, status: 'PAUSED', special_ad_categories: []
       });
       if (c.error) throw new Error(`Campaña: ${c.error.message}`);
 
@@ -635,13 +635,12 @@
 
   /* ── Helpers ─────────────────────────────────────────────────────── */
   async function post(path, body) {
-    const url = `${API}${path}`;
-    const payload = { ...body, access_token: TOKEN };
-    console.log('[Meta POST JSON]', url, 'Payload keys:', Object.keys(payload));
+    const url = `${API}${path}?access_token=${encodeURIComponent(TOKEN)}`;
+    console.log('[Meta POST JSON]', url, 'Body keys:', Object.keys(body));
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(body)
     });
     const data = await res.json();
     if (data.error) {
