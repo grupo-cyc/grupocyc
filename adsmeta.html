@@ -292,6 +292,20 @@
           </select>
         </label>
 
+        <label class="full" style="display:flex; align-items:center; gap:8px; cursor:pointer; margin-top:4px;">
+          <input type="checkbox" id="laserBga" onchange="toggleLaserBga()" />
+          <span>🎯 <strong>Bucaramanga y área metropolitana</strong> (segmentación láser)</span>
+        </label>
+
+        <label id="laserRadiusLabel" style="display:none;">Área de cobertura
+          <select id="laserRadius">
+            <option value="city">🏙️ Solo Bucaramanga (sin radio)</option>
+            <option value="10">📍 10 km — Centro + barrios cercanos</option>
+            <option value="25" selected>🎯 25 km — Área Metropolitana</option>
+            <option value="50">🗺️ 50 km — Incluye Lebrija, San Gil</option>
+          </select>
+        </label>
+
         <label>Edad mínima
           <input id="ageMin" type="number" min="18" max="65" value="25" />
         </label>
@@ -478,6 +492,11 @@
     return document.getElementById('sandboxMode').checked;
   }
 
+  function toggleLaserBga() {
+    const isLaser = document.getElementById('laserBga').checked;
+    document.getElementById('laserRadiusLabel').style.display = isLaser ? 'block' : 'none';
+  }
+
   /* ── Paso 1: Verificar token ─────────────────────────────────────── */
   async function verifyToken() {
     const val = document.getElementById('tokenInput').value.trim();
@@ -548,6 +567,8 @@
     const obj  = document.getElementById('objective').value;
     const budget = parseInt(document.getElementById('dailyBudget').value) || 0;
     const geo  = document.getElementById('geo').value;
+    const laserBga = document.getElementById('laserBga').checked;
+    const laserRadius = parseInt(document.getElementById('laserRadius').value) || 25;
     const ageMin  = parseInt(document.getElementById('ageMin').value) || 18;
     const ageMax  = parseInt(document.getElementById('ageMax').value) || 65;
     const start   = document.getElementById('startDate').value;
@@ -587,8 +608,25 @@
 
       /* 2. AdSet */
       alert_('alertStep3','info','⏳ 2/4 — Creando conjunto de anuncios...');
+      let geoTargeting = { countries: [geo] };
+      if (laserBga) {
+        if (laserRadius === 'city') {
+          const cityKey = await getBucaramangaCityKey();
+          geoTargeting = { cities: [{ key: cityKey, radius: 0, distance_unit: 'kilometer' }] };
+        } else {
+          geoTargeting = {
+            custom_locations: [{
+              latitude: 7.1254,
+              longitude: -73.1193,
+              radius: parseInt(laserRadius),
+              distance_unit: 'kilometer',
+              name: 'Bucaramanga'
+            }]
+          };
+        }
+      }
       const targeting = {
-        geo_locations: { countries: [geo] },
+        geo_locations: geoTargeting,
         age_min: ageMin,
         age_max: ageMax,
         targeting_automation: { advantage_audience: 0 }
@@ -725,6 +763,23 @@
       const d = await r.json();
       return d.data?.[0]?.id || '0';
     } catch { return '0'; }
+  }
+
+  let _bgaCityKey = null;
+  async function getBucaramangaCityKey() {
+    if (_bgaCityKey) return _bgaCityKey;
+    try {
+      const r = await fetch(`${API}/search?type=adgeolocation&q=Bucaramanga&limit=1&access_token=${TOKEN}`);
+      const d = await r.json();
+      const city = d.data?.find(x => x.type === 'city') || d.data?.[0];
+      if (!city?.key) throw new Error('No se encontró ciudad Bucaramanga en Meta');
+      _bgaCityKey = city.key;
+      console.log('[Meta City Key]', 'Bucaramanga =', _bgaCityKey);
+      return _bgaCityKey;
+    } catch (e) {
+      console.error('[Meta City Key ERROR]', e);
+      throw new Error('No pude obtener el ID de Bucaramanga. Intenta con una opción de radio en km.');
+    }
   }
 
   function resetAll() {
@@ -985,6 +1040,7 @@ Genera un anuncio de Facebook Ads. Responde EXCLUSIVAMENTE con este JSON (sin ma
   window.selectVariant = selectVariant;
   window.applyAIBudget = applyAIBudget;
   window.toggleSandboxMode = toggleSandboxMode;
+  window.toggleLaserBga = toggleLaserBga;
   window.previewImage = previewImage;
 
   /* ── Init ─────────────────────────────────────────── */
