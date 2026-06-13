@@ -650,21 +650,16 @@
   }
 
   async function post(path, body) {
-    const params = new URLSearchParams();
-    params.append('access_token', TOKEN);
-    for (const [key, value] of Object.entries(body)) {
-      serializeParam(key, value, params);
-    }
-    const url = `${API}${path}`;
-    console.log('[Meta POST]', url, 'Params:', Object.fromEntries(params.entries()));
+    const url = `${API}${path}?access_token=${encodeURIComponent(TOKEN)}`;
+    console.log('[Meta POST JSON]', url, 'Body:', JSON.stringify(body));
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: params
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
     });
     const data = await res.json();
     if (data.error) {
-      console.error('[Meta ERROR]', data.error);
+      console.error('[Meta ERROR full]', JSON.stringify(data.error, null, 2));
     }
     return data;
   }
