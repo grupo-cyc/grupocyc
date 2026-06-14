@@ -261,6 +261,9 @@
           <label class="full">Contexto opcional para hoy
             <textarea id="autoBrief" rows="2" placeholder="Ej: Quiero vender afiliaciones EPS esta semana. O: Enfócate en negocios de Santander. Puedes dejarlo vacío para que la IA decida el mejor nicho."></textarea>
           </label>
+          <label class="full">Precio desde para filtro de banner (COP) <span style="font-weight:500;color:var(--muted)">(obligatorio — filtra curiosos que no están dispuestos a pagar)</span>
+            <input id="bannerPrice" type="number" min="10000" step="1000" placeholder="Ej: 75000 para Salud, 280000 para Pensión" />
+          </label>
         </div>
         <div style="margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
           <button class="btn btn-ai" id="btnAutoAI" onclick="generateAutoStrategy()">🧠 Pensar estrategia completa</button>
@@ -400,7 +403,7 @@
         <label class="full">Subir imagen <span style="font-weight:500;color:var(--muted)">(JPG/PNG, recomendado 1200×628 px)</span>
           <input id="adImageFile" type="file" accept="image/jpeg,image/png,image/webp" onchange="previewImage(this)" />
         </label>
-        <img id="adImagePreview" style="display:none; max-width:200px; margin-top:8px; border-radius:6px; border:1px solid #ddd;" />
+        <img id="adImagePreview" style="display:none; max-width:100%; width:500px; margin-top:12px; border-radius:14px; box-shadow: 0 10px 30px rgba(10,35,66,0.15); border:1.5px solid rgba(10,35,66,0.1);" />
         <div id="imageUploadStatus" style="margin-top:6px; font-size:0.9rem; color:var(--muted);"></div>
         <input type="hidden" id="imageHash" />
 
@@ -961,6 +964,7 @@ REGLAS ESTRATÉGICAS:
 - El objetivo es MENSAJES A WHATSAPP de personas DECIDIDAS a afiliarse, no curiosos que solo preguntan precio.
 - Presupuesto realista en COP para test inicial: entre 15000 y 40000. CRÍTICO: No escojas siempre 25000 de forma perezosa. Analiza estratégicamente la amplitud del nicho elegido, la ubicación y el público, y calcula un valor personalizado (por ejemplo, 18000, 22000, 28000, 32000, 35000, etc.) que sea un múltiplo de 1000. Explica tu decisión de presupuesto en el campo "razonamiento".
 - Genera 3 variantes A/B con ángulos distintos: prevención, beneficio, confianza/urgencia.
+- El usuario definirá el precio de entrada (COP) que se usará como filtro visual en el banner del anuncio. La IA solo debe usar ese valor exacto en el campo "precio_desde_cop" del JSON.
 - Cada texto debe respetar límites reales: título máximo 40 caracteres, texto máximo 125 caracteres, cta máximo 30 caracteres.
 - Debes devolver JSON válido, sin markdown.
 
@@ -993,7 +997,10 @@ Responde EXCLUSIVAMENTE este JSON:
   "mensaje_whatsapp": "texto que la persona enviará al abrir WhatsApp, con intención clara de afiliarse",
   "intereses_sugeridos": ["interés 1", "interés 2", "interés 3"],
   "razonamiento": "explica brevemente por qué elegiste nicho, edad, ubicación y presupuesto",
-  "prompt_imagen": "prompt breve para futura imagen IA"
+  "prompt_imagen": "prompt breve en español",
+  "prompt_imagen_en": "highly detailed photography prompt in English for the background image, focusing on natural lighting, realistic people of Colombia matching the niche, professional aesthetic",
+  "texto_banner_corto": "frase corta de 2 o 3 palabras sobre el servicio, ej: 'Salud & EPS' o 'Pensión Segura'",
+  "precio_desde_cop": 75000
 }`;
   }
 
@@ -1034,6 +1041,12 @@ Responde EXCLUSIVAMENTE este JSON:
     window._aiVariants = vars;
     window._aiInterests = strategy.intereses_sugeridos || [];
     window._autoStrategy = strategy;
+
+    // Generar banner automático con IA y filtro de precios
+    const promptEn = strategy.prompt_imagen_en || "A professional in Colombia, smiling, high-quality photograph";
+    const bannerTitle = strategy.texto_banner_corto || strategy.servicio_principal || "Seguridad Social";
+    const price = parseInt(document.getElementById('bannerPrice').value) || strategy.precio_desde_cop || 75000;
+    generateBanner(promptEn, bannerTitle, price);
   }
 
   async function generateAutoStrategy() {
@@ -1314,6 +1327,130 @@ Genera un anuncio de Facebook Ads. Responde EXCLUSIVAMENTE con este JSON (sin ma
       preview.style.display = 'none';
       window._adImageBlob = null;
     });
+  }
+
+  async function generateBanner(promptEn, bannerTitle, priceValue) {
+    const status = document.getElementById('imageUploadStatus');
+    const preview = document.getElementById('adImagePreview');
+    let canvas = document.getElementById('adCanvas');
+    if (!canvas) {
+      canvas = document.createElement('canvas');
+      canvas.id = 'adCanvas';
+      canvas.width = 1200;
+      canvas.height = 628;
+      canvas.style.display = 'none';
+      document.body.appendChild(canvas);
+    }
+
+    status.innerHTML = '🎨 ⏳ Generando fondo con IA (Pollinations) y diseñando banner con filtro de precios...';
+
+    const cleanPrompt = encodeURIComponent(String(promptEn).trim());
+    const imageUrl = `https://image.pollinations.ai/prompt/${cleanPrompt}?width=1200&height=628&seed=${Math.floor(Math.random()*100000)}&nologo=true`;
+
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+
+    img.onload = () => {
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // 1. Background (cover fit)
+      const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+      const x = (canvas.width / 2) - (img.width / 2) * scale;
+      const bgY = (canvas.height / 2) - (img.height / 2) * scale;
+      ctx.drawImage(img, x, bgY, img.width * scale, img.height * scale);
+
+      // 2. Left Sidebar Panel (Navy with lime accent)
+      ctx.fillStyle = 'rgba(10, 35, 66, 0.92)';
+      ctx.fillRect(0, 0, 460, canvas.height);
+      ctx.fillStyle = '#8CC63F';
+      ctx.fillRect(452, 0, 8, canvas.height);
+
+      // 3. C&C Brand Badge
+      const drawRoundRect = (cx, dx, dy, dw, dh, dr) => {
+        if (cx.roundRect) { cx.roundRect(dx, dy, dw, dh, dr); }
+        else { cx.beginPath(); cx.moveTo(dx+dr, dy); cx.lineTo(dx+dw-dr, dy); cx.quadraticCurveTo(dx+dw, dy, dx+dw, dy+dr); cx.lineTo(dx+dw, dy+dh-dr); cx.quadraticCurveTo(dx+dw, dy+dh, dx+dw-dr, dy+dh); cx.lineTo(dx+dr, dy+dh); cx.quadraticCurveTo(dx, dy+dh, dx, dy+dh-dr); cx.lineTo(dx, dy+dr); cx.quadraticCurveTo(dx, dy, dx+dr, dy); cx.closePath(); }
+      };
+      ctx.fillStyle = '#8CC63F';
+      drawRoundRect(ctx, 40, 50, 260, 42, 10);
+      ctx.fill();
+      ctx.fillStyle = '#0A2342';
+      ctx.font = '800 18px Poppins, Arial, sans-serif';
+      ctx.fillText('GRUPO CONSULTOR C&C', 54, 78);
+
+      // 4. Title with word wrap
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '700 40px Poppins, Arial, sans-serif';
+      const titleText = `Asesoría y Afiliación de ${bannerTitle}`;
+      const words = titleText.split(' ');
+      let line = '', y = 160;
+      const maxW = 380;
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        if (ctx.measureText(testLine).width > maxW && n > 0) {
+          ctx.fillText(line, 40, y);
+          line = words[n] + ' ';
+          y += 52;
+        } else { line = testLine; }
+      }
+      ctx.fillText(line, 40, y);
+
+      // 5. Divider
+      y += 28;
+      ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(40, y);
+      ctx.lineTo(410, y);
+      ctx.stroke();
+
+      // 6. Massive Price Filter
+      y += 65;
+      ctx.fillStyle = '#8CC63F';
+      ctx.font = '900 64px Poppins, Arial, sans-serif';
+      const formattedPrice = Number(priceValue).toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
+      ctx.fillText(formattedPrice, 40, y);
+
+      y += 42;
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '600 22px Poppins, Arial, sans-serif';
+      ctx.fillText('/ mes completo', 40, y);
+
+      // 7. Trust micro-badge
+      y += 50;
+      ctx.fillStyle = 'rgba(255,255,255,0.1)';
+      drawRoundRect(ctx, 40, y, 370, 65, 10);
+      ctx.fill();
+      ctx.fillStyle = '#B7F35A';
+      ctx.font = '700 15px Poppins, Arial, sans-serif';
+      ctx.fillText('✓ Transparencia Absoluta & Pago Real', 54, y + 28);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '500 13px Poppins, Arial, sans-serif';
+      ctx.fillText('Evita sanciones de la UGPP y multas legales', 54, y + 48);
+
+      // 8. WhatsApp CTA badge
+      y += 100;
+      ctx.fillStyle = '#25D366';
+      drawRoundRect(ctx, 40, y, 370, 50, 12);
+      ctx.fill();
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '800 17px Poppins, Arial, sans-serif';
+      ctx.fillText('💬 ¡ESCRÍBENOS AL WHATSAPP!', 75, y + 33);
+
+      // 9. Export
+      canvas.toBlob(blob => {
+        window._adImageBlob = blob;
+        preview.src = URL.createObjectURL(blob);
+        preview.style.display = 'block';
+        status.innerHTML = `✅ <strong>Banner con filtro de precios listo</strong> — ${formattedPrice}/mes.<br><small style="color:var(--muted)">Se subirá automáticamente al crear la campaña.</small>`;
+      }, 'image/jpeg', 0.90);
+    };
+
+    img.onerror = () => {
+      status.innerHTML = '❌ No se pudo cargar el fondo de IA. Revisa tu conexión o intenta de nuevo.';
+    };
+
+    img.src = imageUrl;
   }
 
   async function uploadImageToMeta(blob) {
