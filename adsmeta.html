@@ -959,7 +959,7 @@ REGLAS ESTRATÉGICAS:
 - Si eliges pensión: edad sugerida 36-60.
 - Si no hay instrucción geográfica explícita, prioriza Bucaramanga y área metropolitana antes que todo Colombia, porque el negocio tiene base en Girón/Santander y necesita leads más cercanos y confiables.
 - El objetivo es MENSAJES A WHATSAPP de personas DECIDIDAS a afiliarse, no curiosos que solo preguntan precio.
-- Presupuesto realista en COP para test inicial: entre 15000 y 40000. No exageres.
+- Presupuesto realista en COP para test inicial: entre 15000 y 40000. CRÍTICO: No escojas siempre 25000 de forma perezosa. Analiza estratégicamente la amplitud del nicho elegido, la ubicación y el público, y calcula un valor personalizado (por ejemplo, 18000, 22000, 28000, 32000, 35000, etc.) que sea un múltiplo de 1000. Explica tu decisión de presupuesto en el campo "razonamiento".
 - Genera 3 variantes A/B con ángulos distintos: prevención, beneficio, confianza/urgencia.
 - Cada texto debe respetar límites reales: título máximo 40 caracteres, texto máximo 125 caracteres, cta máximo 30 caracteres.
 - Debes devolver JSON válido, sin markdown.
@@ -977,7 +977,7 @@ Responde EXCLUSIVAMENTE este JSON:
   "servicio_principal": "EPS|Pensión|ARL|Caja de Compensación|Seguridad Social Integral",
   "objetivo": "MESSAGES_WA",
   "nombre_campana": "máximo 50 caracteres",
-  "presupuesto_diario_cop": 25000,
+  "presupuesto_diario_cop": 20000, // CRÍTICO: No devuelvas siempre 20000 ni 25000. Calcula un valor dinámico y realista entre 15000 y 40000 según tu análisis estratégico de este nicho específico.
   "edad_min": 25,
   "edad_max": 55,
   "ubicacion": {
@@ -1153,7 +1153,7 @@ Genera 3 VARIANTES de anuncio de Facebook Ads. Cada variante debe usar un ángul
 
 Además, sugiere:
 - 3 a 5 INTERESES de audiencia de Facebook relevantes (en español, nombres que Facebook Ads reconozca)
-- 1 PRESUPUESTO DIARIO SUGERIDO en COP (número entero, basado en mercado colombiano de seguridad social)
+- 1 PRESUPUESTO DIARIO SUGERIDO en COP (número entero, basado en mercado colombiano de seguridad social. CRÍTICO: Debe ser un valor dinámico y calculado estratégicamente entre 15000 y 40000 COP, múltiplo de 1000, según el público y enfoque. NO elijas siempre 25000 de forma por defecto o perezosa).
 
 Responde EXCLUSIVAMENTE con este JSON:
 {
@@ -1163,7 +1163,7 @@ Responde EXCLUSIVAMENTE con este JSON:
     {"titulo": "máx 40 chars", "texto": "máx 125 chars", "cta": "máx 30 chars", "angulo": "urgencia"}
   ],
   "intereses": ["interés 1", "interés 2", "interés 3"],
-  "presupuesto_sugerido_cop": 25000,
+  "presupuesto_sugerido_cop": 20000, // CRÍTICO: Calcula un valor dinámico y realista entre 15000 y 40000 según tu análisis estratégico de este nicho, no devuelvas siempre este ejemplo.
   "justificacion": "breve explicación"
 }`;
     } else {
