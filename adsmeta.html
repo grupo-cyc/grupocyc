@@ -959,7 +959,11 @@ REGLAS ESTRATÉGICAS:
 - El objetivo es MENSAJES A WHATSAPP de personas DECIDIDAS a afiliarse, no curiosos que solo preguntan precio.
 - Presupuesto realista en COP para test inicial: entre 15000 y 40000. CRÍTICO: No escojas siempre 25000 de forma perezosa. Analiza estratégicamente la amplitud del nicho elegido, la ubicación y el público, y calcula un valor personalizado (por ejemplo, 18000, 22000, 28000, 32000, 35000, etc.) que sea un múltiplo de 1000.
 - Genera 3 variantes A/B con ángulos distintos: prevención, beneficio, confianza/urgencia.
-- Cada texto debe respetar límites reales: título máximo 40 caracteres, texto máximo 125 caracteres, cta máximo 30 caracteres.
+- LÍMITES ESTRICTOS DE CARACTERES (la plataforma de Meta los rechaza si se exceden):
+  * titulo: MÁXIMO 40 caracteres, incluyendo espacios y signos de puntuación.
+  * texto: MÁXIMO 125 caracteres, incluyendo espacios y signos de puntuación.
+  * cta: MÁXIMO 30 caracteres, incluyendo espacios.
+  Si el título supera 40 chars, será rechazado. Recuéntalos antes de devolver el JSON.
 - Debes devolver JSON válido, sin markdown.
 
 FILTRO DE INTENCIÓN (CRÍTICO para no atraer curiosos):
@@ -1019,9 +1023,10 @@ Responde EXCLUSIVAMENTE este JSON:
 
     const vars = strategy.variantes || [];
     const first = vars[0] || {};
-    document.getElementById('adTitle').value = first.titulo || '';
-    document.getElementById('adBody').value = first.texto || '';
-    document.getElementById('adDesc').value = first.cta || 'Escríbenos';
+    // Safety truncate: Meta rejects if over limit
+    document.getElementById('adTitle').value = (first.titulo || '').slice(0, 40);
+    document.getElementById('adBody').value = (first.texto || '').slice(0, 125);
+    document.getElementById('adDesc').value = (first.cta || 'Escríbenos').slice(0, 30);
     countChars('adTitle','cTitle',40);
     countChars('adBody','cBody',125);
     countChars('adDesc','cDesc',30);
@@ -1236,9 +1241,9 @@ Genera un anuncio de Facebook Ads. Responde EXCLUSIVAMENTE con este JSON (sin ma
         `;
 
         const first = vars[0] || {};
-        document.getElementById('adTitle').value = first.titulo || '';
-        document.getElementById('adBody').value  = first.texto || '';
-        document.getElementById('adDesc').value  = first.cta   || '';
+        document.getElementById('adTitle').value = (first.titulo || '').slice(0, 40);
+        document.getElementById('adBody').value  = (first.texto  || '').slice(0, 125);
+        document.getElementById('adDesc').value  = (first.cta    || '').slice(0, 30);
         countChars('adTitle','cTitle',40);
         countChars('adBody','cBody',125);
         countChars('adDesc','cDesc',30);
@@ -1248,10 +1253,10 @@ Genera un anuncio de Facebook Ads. Responde EXCLUSIVAMENTE con este JSON (sin ma
         document.getElementById('aiResults').classList.remove('hidden');
         alert_('alertAI','ok','✅ 3 variantes generadas. Selecciona una o deja todas para A/B testing.');
       } else {
-        document.getElementById('adTitle').value      = result.titulo      || '';
-        document.getElementById('adBody').value       = result.texto       || '';
-        document.getElementById('adDesc').value       = result.cta         || '';
-        document.getElementById('campaignName').value = result.nombre_campana || '';
+        document.getElementById('adTitle').value      = (result.titulo      || '').slice(0, 40);
+        document.getElementById('adBody').value       = (result.texto       || '').slice(0, 125);
+        document.getElementById('adDesc').value       = (result.cta         || '').slice(0, 30);
+        document.getElementById('campaignName').value = (result.nombre_campana || '').slice(0, 50);
         countChars('adTitle','cTitle',40);
         countChars('adBody','cBody',125);
         countChars('adDesc','cDesc',30);
