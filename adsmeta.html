@@ -1063,10 +1063,14 @@ Responde EXCLUSIVAMENTE este JSON:
 
     try {
       let data = await callGroq(buildAutoStrategyPrompt(brief, nicho, angulo), 'llama-3.3-70b-versatile', 1400, 0.95);
-      // Fallback a modelo 8B si hay rate limit (doble de tokens diarios)
-      if (data.error && (data.error.code === 'rate_limit_exceeded' || (data.error.message || '').toLowerCase().includes('rate limit'))) {
-        alert_('alertAutoAI','warn','⚡ Límite alcanzado en modelo 70B. Reintentando con modelo alternativo...');
-        data = await callGroq(buildAutoStrategyPrompt(brief, nicho, angulo), 'llama-3.1-8b-instant', 1400, 0.95);
+      // Fallback chain: main key 70B → backup key 70B → backup key 8B
+      if (isRateLimitError(data)) {
+        alert_('alertAutoAI','warn','⚡ Límite principal agotado. Reintentando con API de respaldo...');
+        data = await callGroq(buildAutoStrategyPrompt(brief, nicho, angulo), 'llama-3.3-70b-versatile', 1400, 0.95, BACKUP_GROQ_KEY);
+      }
+      if (isRateLimitError(data)) {
+        alert_('alertAutoAI','warn','⚡ Reintentando con modelo alternativo (8B)...');
+        data = await callGroq(buildAutoStrategyPrompt(brief, nicho, angulo), 'llama-3.1-8b-instant', 1400, 0.95, BACKUP_GROQ_KEY);
       }
       if (data.error) throw new Error(data.error?.message || JSON.stringify(data.error));
       const raw = data.choices?.[0]?.message?.content || '';
@@ -1112,12 +1116,19 @@ Responde EXCLUSIVAMENTE este JSON:
     document.getElementById('autoStatus').textContent = '';
   }
 
+  const BACKUP_GROQ_KEY = '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';
+
+  function isRateLimitError(data) {
+    return data.error && (data.error.code === 'rate_limit_exceeded' || (data.error.message || '').toLowerCase().includes('rate limit'));
+  }
+
   /* ── Helper: llamar a Groq con retry en rate limit ─────────────── */
-  async function callGroq(promptContent, model, maxTokens, temperature) {
+  async function callGroq(promptContent, model, maxTokens, temperature, apiKey) {
+    const key = apiKey || GROQ_KEY;
     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${GROQ_KEY}`,
+        'Authorization': `Bearer ${key}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
@@ -1203,9 +1214,14 @@ Genera un anuncio de Facebook Ads. Responde EXCLUSIVAMENTE con este JSON (sin ma
 
     try {
       let data = await callGroq(fullPrompt, 'llama-3.3-70b-versatile', abMode ? 1024 : 512, 0.8);
-      if (data.error && (data.error.code === 'rate_limit_exceeded' || (data.error.message || '').toLowerCase().includes('rate limit'))) {
-        alert_('alertAI','warn','⚡ Límite alcanzado en modelo 70B. Reintentando con modelo alternativo...');
-        data = await callGroq(fullPrompt, 'llama-3.1-8b-instant', abMode ? 1024 : 512, 0.8);
+      // Fallback chain: main key 70B → backup key 70B → backup key 8B
+      if (isRateLimitError(data)) {
+        alert_('alertAI','warn','⚡ Límite principal agotado. Reintentando con API de respaldo...');
+        data = await callGroq(fullPrompt, 'llama-3.3-70b-versatile', abMode ? 1024 : 512, 0.8, BACKUP_GROQ_KEY);
+      }
+      if (isRateLimitError(data)) {
+        alert_('alertAI','warn','⚡ Reintentando con modelo alternativo (8B)...');
+        data = await callGroq(fullPrompt, 'llama-3.1-8b-instant', abMode ? 1024 : 512, 0.8, BACKUP_GROQ_KEY);
       }
       if (data.error) throw new Error(data.error?.message || JSON.stringify(data.error));
 
