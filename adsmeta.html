@@ -954,10 +954,11 @@ CONTEXTO OPCIONAL DEL USUARIO:
 ${brief || 'Sin contexto. Decide estratégicamente la mejor campaña para hoy.'}${nichoDirective}${anguloDirective}
 
 REGLAS ESTRATÉGICAS:
-- Si eliges familias/EPS: edad sugerida 25-36.
-- Si eliges pequeños negocios: edad sugerida 25-55 y ubicación Santander/Bucaramanga área metropolitana.
-- Si eliges independientes profesionales: edad sugerida 25-50.
-- Si eliges pensión: edad sugerida 36-60.
+- EDAD (CRÍTICO): Si el usuario menciona explícitamente un rango de edad o una edad mínima en el "Contexto opcional", debes respetarla EXACTAMENTE en los campos "edad_min" y "edad_max" del JSON. Ejemplo: si el usuario dice "público de 50 años" o "mayores de 50", edad_min debe ser 50 o más. Solo si el usuario NO menciona edad, usa estas sugerencias por defecto:
+  - familias/EPS: 25-36
+  - pequeños negocios: 25-55
+  - independientes profesionales: 25-50
+  - pensión: 36-60
 - Si no hay instrucción geográfica explícita, prioriza Bucaramanga y área metropolitana antes que todo Colombia, porque el negocio tiene base en Girón/Santander y necesita leads más cercanos y confiables.
 - El objetivo es MENSAJES A WHATSAPP de personas DECIDIDAS a afiliarse, no curiosos que solo preguntan precio.
 - Presupuesto realista en COP para test inicial: entre 15000 y 40000. CRÍTICO: No escojas siempre 25000 de forma perezosa. Analiza estratégicamente la amplitud del nicho elegido, la ubicación y el público, y calcula un valor personalizado (por ejemplo, 18000, 22000, 28000, 32000, 35000, etc.) que sea un múltiplo de 1000. Explica tu decisión de presupuesto en el campo "razonamiento".
