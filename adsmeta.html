@@ -665,7 +665,7 @@
         if (laserRadius === 'city') {
           const cityKey = await getBucaramangaCityKey();
           geoTargeting = { cities: [{ key: cityKey, radius: 0, distance_unit: 'kilometer' }] };
-        } else {
+        } else if (laserRadius && parseInt(laserRadius) > 0) {
           geoTargeting = {
             custom_locations: [{
               latitude: 7.1254,
@@ -676,6 +676,7 @@
             }]
           };
         }
+        // Si laserRadius está vacío o inválido, se queda en countries: [geo] como fallback seguro
       }
       const targeting = {
         geo_locations: geoTargeting,
