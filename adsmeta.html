@@ -261,6 +261,10 @@
           <label class="full">Contexto opcional para hoy
             <textarea id="autoBrief" rows="2" placeholder="Ej: Quiero vender afiliaciones EPS esta semana. O: Enfócate en negocios de Santander. Puedes dejarlo vacío para que la IA decida el mejor nicho."></textarea>
           </label>
+          <label class="full" style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:10px 12px;">
+            <input type="checkbox" id="weekendMode" style="width:auto;margin:0;" />
+            <span>🌙 Modo fin de semana — Ganar seguidores (sin WhatsApp, no atendemos chats)</span>
+          </label>
         </div>
         <div style="margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
           <button class="btn btn-ai" id="btnAutoAI" onclick="generateAutoStrategy()">🧠 Pensar estrategia completa</button>
@@ -319,6 +323,7 @@
         <label>Objetivo
           <select id="objective">
             <option value="MESSAGES_WA" selected>💬 Mensajes a WhatsApp (recomendado — leads decididos)</option>
+            <option value="PAGE_FOLLOWERS">👍 Ganar seguidores (fin de semana — sin WhatsApp)</option>
             <option value="OUTCOME_LEADS">Generación de leads (formulario en Facebook)</option>
             <option value="OUTCOME_TRAFFIC">Tráfico al sitio web</option>
             <option value="OUTCOME_AWARENESS">Reconocimiento de marca</option>
@@ -632,8 +637,10 @@
     const variants = window._aiVariants || [];
     const interests = window._aiInterests || [];
 
-    if (!name || !budget || !url || !title || !body) {
-      alert_('alertStep3','err','⚠️ Completa todos los campos obligatorios: nombre, presupuesto, URL, título y texto del anuncio.');
+    const isFollowers = obj === 'PAGE_FOLLOWERS';
+    // Para 'Ganar seguidores' la URL no es obligatoria (el botón lleva a seguir la página, no a un enlace externo).
+    if (!name || !budget || !title || !body || (!url && !isFollowers)) {
+      alert_('alertStep3','err','⚠️ Completa los campos obligatorios: nombre, presupuesto, título y texto del anuncio' + (isFollowers ? '.' : ', y URL de destino.'));
       return;
     }
 
@@ -652,7 +659,7 @@
       /* 1. Campaign */
       alert_('alertStep3','info','⏳ 1/4 — Creando campaña...');
       const isWhatsApp = obj === 'MESSAGES_WA';
-      const campaignObjective = isWhatsApp ? 'OUTCOME_ENGAGEMENT' : obj;
+      const campaignObjective = (isWhatsApp || isFollowers) ? 'OUTCOME_ENGAGEMENT' : obj;
       const c = await post(`/${ACCOUNT_ID}/campaigns`, {
         name, objective: campaignObjective, status: 'PAUSED', special_ad_categories: ['NONE'], is_adset_budget_sharing_enabled: false
       });
@@ -694,6 +701,7 @@
         billing_event: 'IMPRESSIONS',
         bid_strategy: 'LOWEST_COST_WITHOUT_CAP',
         optimization_goal: isWhatsApp           ? 'CONVERSATIONS'
+                         : isFollowers            ? 'PAGE_LIKES'
                          : obj === 'OUTCOME_LEADS' ? 'LEAD_GENERATION'
                          : obj === 'OUTCOME_SALES'  ? 'OFFSITE_CONVERSIONS'
                          : 'LINK_CLICKS',
@@ -703,6 +711,8 @@
       };
       if (isWhatsApp) {
         adsetPayload.destination_type = 'WHATSAPP';
+        adsetPayload.promoted_object = { page_id: pageIdForAdset };
+      } else if (isFollowers) {
         adsetPayload.promoted_object = { page_id: pageIdForAdset };
       } else if (obj === 'OUTCOME_LEADS') {
         adsetPayload.promoted_object = { page_id: pageIdForAdset };
@@ -722,14 +732,18 @@
         type: 'WHATSAPP_MESSAGE',
         value: { app_destination: 'WHATSAPP' }
       };
+      // Para 'Ganar seguidores': botón 'Seguir/Me gusta' que lleva a la página de Facebook.
+      const followCTA = { type: 'LIKE_PAGE', value: { page: pageId } };
+      const pageUrl = `https://www.facebook.com/${pageId}`;
 
       if (abMode && variants.length >= 2) {
         alert_('alertStep3','info',`⏳ 3/4 — Creando ${variants.length} anuncios A/B...`);
         for (let i = 0; i < variants.length; i++) {
           const v = variants[i];
-          const linkData = { link: url, message: v.texto || body, name: v.titulo || title, description: v.cta || desc };
+          const linkData = { link: isFollowers ? pageUrl : url, message: v.texto || body, name: v.titulo || title, description: v.cta || desc };
           if (imgHash) linkData.image_hash = imgHash;
           if (isWhatsApp) linkData.call_to_action = whatsappCTA;
+          if (isFollowers) linkData.call_to_action = followCTA;
           const cr = await post(`/${ACCOUNT_ID}/adcreatives`, {
             name: `${name} — Creative ${i+1} (${v.angulo || 'v'+ (i+1)})`,
             object_story_spec: { page_id: pageId, link_data: linkData }
@@ -747,9 +761,10 @@
         }
       } else {
         alert_('alertStep3','info','⏳ 3/4 — Creando el anuncio...');
-        const linkData = { link: url, message: body, name: title, description: desc };
+        const linkData = { link: isFollowers ? pageUrl : url, message: body, name: title, description: desc };
         if (imgHash) linkData.image_hash = imgHash;
         if (isWhatsApp) linkData.call_to_action = whatsappCTA;
+        if (isFollowers) linkData.call_to_action = followCTA;
         const cr = await post(`/${ACCOUNT_ID}/adcreatives`, {
           name: `${name} — Creative`,
           object_story_spec: { page_id: pageId, link_data: linkData }
@@ -922,7 +937,7 @@ REGLAS:
 
   const AI_PREAMBLE = `Usa tu máxima intelectualidad para negocios de servicios y aplica tu máxima potencia de razonamiento. Si tienes conocimiento actualizado del mercado colombiano de seguridad social, aplícalo; razona como un consultor experto con la información más reciente disponible.`;
 
-  function buildAutoStrategyPrompt(brief, forcedNicho, forcedAngulo) {
+  function buildAutoStrategyPrompt(brief, forcedNicho, forcedAngulo, weekend) {
     const date = new Date().toLocaleDateString('es-CO', { year:'numeric', month:'long', day:'numeric' });
     const nichoLabels = {
       familias: 'FAMILIAS (EPS familiar, subsidios de caja para hijos)',
@@ -937,9 +952,27 @@ REGLAS:
     const anguloDirective = (forcedAngulo && forcedAngulo !== 'auto')
       ? `\n\nÁNGULO DOMINANTE OBLIGATORIO: la primera variante (la principal) debe usar el ángulo "${forcedAngulo}". Las otras dos pueden explorar ángulos complementarios.`
       : '';
+    const objetivoRule = weekend
+      ? '- OBJETIVO (FIN DE SEMANA): GANAR SEGUIDORES en la página de Facebook. IMPORTANTE: el fin de semana NO atendemos WhatsApp, así que el copy NO debe pedir que escriban, NO debe mencionar WhatsApp ni "escríbenos". El CTA debe invitar a SEGUIR la página para no perderse contenido útil.'
+      : '- El objetivo es MENSAJES A WHATSAPP de personas DECIDIDAS a afiliarse, no curiosos que solo preguntan precio.';
+    const filtroBlock = weekend
+      ? `CRECIMIENTO DE COMUNIDAD (fin de semana — NO atendemos WhatsApp):
+- La meta es que la gente SIGA la página de Facebook, no que escriba ni se afilie ahora.
+- El copy debe aportar valor: educar sobre seguridad social, generar curiosidad, prometer contenido útil constante (tips, alertas de sanciones, fechas clave de pago, mitos del SISBÉN).
+- CTA debe invitar a SEGUIR: ej. "Síguenos para más", "Sigue la página", "No te lo pierdas". NUNCA "escríbenos", "cotiza" ni mencionar WhatsApp.
+- No pidas datos ni menciones WhatsApp. Solo invita a seguir la página.
+- Deja "mensaje_whatsapp" como cadena vacía "".`
+      : `FILTRO DE INTENCIÓN (CRÍTICO para no atraer curiosos):
+- El copy debe hablarle a quien YA quiere afiliarse o regularizar su seguridad social, no a quien apenas explora.
+- Posiciona el servicio como una asesoría profesional con costo de gestión (no "gratis"). Puedes usar señales como "asesoría profesional", "gestión formal", "inversión que protege" para que el cazador de gratis se autodescarte.
+- El CTA debe pedir acción de afiliación o inicio de trámite ("Quiero afiliarme", "Empieza tu afiliación", "Agenda tu asesoría"), nunca "más info" o "cotiza gratis".
+- El texto debe pedir un micro-compromiso: que escriba al WhatsApp indicando qué servicio necesita (EPS, pensión, ARL).
+- Para "mensaje_whatsapp" redacta el texto que la persona debería enviar al abrir WhatsApp, expresando intención clara, ej: "Hola, quiero afiliarme a EPS. ¿Qué necesito para empezar?".`;
+    const objetivoJson = weekend ? 'PAGE_FOLLOWERS' : 'MESSAGES_WA';
+    const introGoal = weekend ? 'maximizar SEGUIDORES de la página de Facebook' : 'maximizar leads por WhatsApp';
     return `${AI_PREAMBLE}
 
-Actúa como estratega senior de performance marketing para Meta Ads especializado en servicios de Seguridad Social en Colombia. Tu trabajo no es solo redactar: debes pensar nicho, objetivo, ubicación, edad, presupuesto y variantes A/B para maximizar leads por WhatsApp para Grupo Consultor C&C.
+Actúa como estratega senior de performance marketing para Meta Ads especializado en servicios de Seguridad Social en Colombia. Tu trabajo no es solo redactar: debes pensar nicho, objetivo, ubicación, edad, presupuesto y variantes A/B para ${introGoal} para Grupo Consultor C&C.
 
 FECHA ACTUAL: ${date}
 
@@ -956,7 +989,7 @@ REGLAS ESTRATÉGICAS:
   - independientes profesionales: 25-50
   - pensión: 36-60
 - Si no hay instrucción geográfica explícita, prioriza Bucaramanga y área metropolitana antes que todo Colombia, porque el negocio tiene base en Girón/Santander y necesita leads más cercanos y confiables.
-- El objetivo es MENSAJES A WHATSAPP de personas DECIDIDAS a afiliarse, no curiosos que solo preguntan precio.
+${objetivoRule}
 - Presupuesto realista en COP para test inicial: entre 15000 y 40000. CRÍTICO: No escojas siempre 25000 de forma perezosa. Analiza estratégicamente la amplitud del nicho elegido, la ubicación y el público, y calcula un valor personalizado (por ejemplo, 18000, 22000, 28000, 32000, 35000, etc.) que sea un múltiplo de 1000.
 - Genera 3 variantes A/B con ángulos distintos: prevención, beneficio, confianza/urgencia.
 - LÍMITES ESTRICTOS DE CARACTERES (la plataforma de Meta los rechaza si se exceden):
@@ -966,18 +999,13 @@ REGLAS ESTRATÉGICAS:
   Si el título supera 40 chars, será rechazado. Recuéntalos antes de devolver el JSON.
 - Debes devolver JSON válido, sin markdown.
 
-FILTRO DE INTENCIÓN (CRÍTICO para no atraer curiosos):
-- El copy debe hablarle a quien YA quiere afiliarse o regularizar su seguridad social, no a quien apenas explora.
-- Posiciona el servicio como una asesoría profesional con costo de gestión (no "gratis"). Puedes usar señales como "asesoría profesional", "gestión formal", "inversión que protege" para que el cazador de gratis se autodescarte.
-- El CTA debe pedir acción de afiliación o inicio de trámite ("Quiero afiliarme", "Empieza tu afiliación", "Agenda tu asesoría"), nunca "más info" o "cotiza gratis".
-- El texto debe pedir un micro-compromiso: que escriba al WhatsApp indicando qué servicio necesita (EPS, pensión, ARL).
-- Para "mensaje_whatsapp" redacta el texto que la persona debería enviar al abrir WhatsApp, expresando intención clara, ej: "Hola, quiero afiliarme a EPS. ¿Qué necesito para empezar?".
+${filtroBlock}
 
 Responde EXCLUSIVAMENTE este JSON:
 {
   "nicho": "familias|negocios|independientes|pension|salud_preventiva",
   "servicio_principal": "EPS|Pensión|ARL|Caja de Compensación|Seguridad Social Integral",
-  "objetivo": "MESSAGES_WA",
+  "objetivo": "${objetivoJson}",
   "nombre_campana": "máximo 50 caracteres",
   "presupuesto_diario_cop": 20000, // CRÍTICO: No devuelvas siempre 20000 ni 25000. Calcula un valor dinámico y realista entre 15000 y 40000 según tu análisis estratégico de este nicho específico.
   "edad_min": 25,
@@ -1005,8 +1033,10 @@ Responde EXCLUSIVAMENTE este JSON:
     document.getElementById('geo').value = 'CO';
     document.getElementById('abMode').checked = true;
 
+    const isFollowers = (strategy.objetivo || 'MESSAGES_WA') === 'PAGE_FOLLOWERS';
     // Cargar el mensaje pre-escrito de WhatsApp para que el lead llegue con intención clara
-    if (strategy.mensaje_whatsapp) {
+    // (solo si NO es campaña de seguidores; en fin de semana no usamos WhatsApp).
+    if (!isFollowers && strategy.mensaje_whatsapp) {
       const destInput = document.getElementById('destUrl');
       const baseNumber = (destInput.value.match(/wa\.me\/(\d+)/) || [])[1] || '573154967667';
       destInput.value = `https://wa.me/${baseNumber}?text=${encodeURIComponent(strategy.mensaje_whatsapp)}`;
@@ -1026,7 +1056,7 @@ Responde EXCLUSIVAMENTE este JSON:
     // Safety truncate: Meta rejects if over limit
     document.getElementById('adTitle').value = (first.titulo || '').slice(0, 40);
     document.getElementById('adBody').value = (first.texto || '').slice(0, 125);
-    document.getElementById('adDesc').value = (first.cta || 'Escríbenos').slice(0, 30);
+    document.getElementById('adDesc').value = (first.cta || (isFollowers ? 'Síguenos' : 'Escríbenos')).slice(0, 30);
     countChars('adTitle','cTitle',40);
     countChars('adBody','cBody',125);
     countChars('adDesc','cDesc',30);
@@ -1044,6 +1074,7 @@ Responde EXCLUSIVAMENTE este JSON:
     const btn = document.getElementById('btnAutoAI');
     const brief = document.getElementById('autoBrief').value.trim();
     const angulo = document.getElementById('autoAngulo').value;
+    const weekend = document.getElementById('weekendMode').checked;
 
     // Rotación inteligente de nicho: si está en "rotar", elegimos uno distinto al último usado
     let nicho = document.getElementById('autoNicho').value;
@@ -1063,24 +1094,26 @@ Responde EXCLUSIVAMENTE este JSON:
 
     try {
       // Primary: Llama 4 Scout (nuevo, más eficiente). Fallback: backup key → 70B → 8B
-      let data = await callGroq(buildAutoStrategyPrompt(brief, nicho, angulo), 'meta-llama/llama-4-scout-17b-16e-instruct', 1400, 0.95);
+      const autoPrompt = buildAutoStrategyPrompt(brief, nicho, angulo, weekend);
+      let data = await callGroq(autoPrompt, 'meta-llama/llama-4-scout-17b-16e-instruct', 1400, 0.95);
       if (isRateLimitError(data)) {
         alert_('alertAutoAI','warn','⚡ Límite principal agotado. Reintentando con API de respaldo...');
-        data = await callGroq(buildAutoStrategyPrompt(brief, nicho, angulo), 'meta-llama/llama-4-scout-17b-16e-instruct', 1400, 0.95, BACKUP_GROQ_KEY);
+        data = await callGroq(autoPrompt, 'meta-llama/llama-4-scout-17b-16e-instruct', 1400, 0.95, BACKUP_GROQ_KEY);
       }
       if (isRateLimitError(data)) {
         alert_('alertAutoAI','warn','⚡ Reintentando con Llama 3.3 70B...');
-        data = await callGroq(buildAutoStrategyPrompt(brief, nicho, angulo), 'llama-3.3-70b-versatile', 1400, 0.95, BACKUP_GROQ_KEY);
+        data = await callGroq(autoPrompt, 'llama-3.3-70b-versatile', 1400, 0.95, BACKUP_GROQ_KEY);
       }
       if (isRateLimitError(data)) {
         alert_('alertAutoAI','warn','⚡ Reintentando con modelo 8B...');
-        data = await callGroq(buildAutoStrategyPrompt(brief, nicho, angulo), 'llama-3.1-8b-instant', 1400, 0.95, BACKUP_GROQ_KEY);
+        data = await callGroq(autoPrompt, 'llama-3.1-8b-instant', 1400, 0.95, BACKUP_GROQ_KEY);
       }
       if (data.error) throw new Error(data.error?.message || JSON.stringify(data.error));
       const raw = data.choices?.[0]?.message?.content || '';
       const jsonMatch = raw.match(/\{[\s\S]*\}/);
       if (!jsonMatch) throw new Error('La IA no devolvió JSON estratégico válido. Intenta de nuevo.');
       const strategy = JSON.parse(jsonMatch[0]);
+      if (weekend) strategy.objetivo = 'PAGE_FOLLOWERS';
 
       applyAutoStrategy(strategy);
       document.getElementById('variantCards').innerHTML = (strategy.variantes || []).map((v, i) => `
@@ -1096,8 +1129,10 @@ Responde EXCLUSIVAMENTE este JSON:
       document.getElementById('aiBudget').innerHTML = `<strong style="color:var(--navy);font-size:1.1rem;">$${Number(strategy.presupuesto_diario_cop || 25000).toLocaleString('es-CO')} COP</strong>`;
       document.getElementById('aiResults').classList.remove('hidden');
 
+      const objetivoLabel = strategy.objetivo === 'PAGE_FOLLOWERS' ? '👍 Ganar seguidores (fin de semana)' : '💬 Mensajes a WhatsApp';
       document.getElementById('autoStrategyBox').innerHTML = `
         <div class="strategy-grid">
+          <div class="strategy-card"><span>Objetivo</span><strong>${objetivoLabel}</strong></div>
           <div class="strategy-card"><span>Nicho elegido</span><strong>${esc(strategy.nicho)}</strong></div>
           <div class="strategy-card"><span>Servicio</span><strong>${esc(strategy.servicio_principal)}</strong></div>
           <div class="strategy-card"><span>Edad</span><strong>${strategy.edad_min} - ${strategy.edad_max}</strong></div>
@@ -1105,7 +1140,10 @@ Responde EXCLUSIVAMENTE este JSON:
         </div>
       `;
       document.getElementById('autoStrategyBox').classList.remove('hidden');
-      alert_('alertAutoAI','ok','✅ Estrategia automática aplicada. Revisa la imagen y crea la campaña cuando estés listo.');
+      const okMsg = strategy.objetivo === 'PAGE_FOLLOWERS'
+        ? '✅ Estrategia de SEGUIDORES aplicada (sin WhatsApp). Revisa la imagen y crea la campaña cuando estés listo.'
+        : '✅ Estrategia automática aplicada. Revisa la imagen y crea la campaña cuando estés listo.';
+      alert_('alertAutoAI','ok',okMsg);
     } catch(e) {
       const msg = e.message || '';
       if (msg.toLowerCase().includes('rate limit') || msg.includes('429')) {
