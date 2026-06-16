@@ -754,6 +754,18 @@
           const creativeSpec = videoId
             ? { page_id: pageId, video_data: { video_id: videoId, message: v.texto || body, title: v.titulo || title, call_to_action: isWhatsApp ? whatsappCTA : (isFollowers ? followCTA : { type: 'LEARN_MORE', value: { link: url } }) } }
             : { page_id: pageId, link_data: { link: isFollowers ? pageUrl : url, message: v.texto || body, name: v.titulo || title, description: v.cta || desc } };
+          if (videoId && imgHash) {
+            creativeSpec.video_data.image_hash = imgHash;
+          } else if (videoId && !imgHash) {
+            try {
+              const tr = await fetch(`${API}/${videoId}?fields=thumbnails&access_token=${encodeURIComponent(TOKEN)}`);
+              const td = await tr.json();
+              const thumb = td?.thumbnails?.data?.[0]?.uri || td?.thumbnails?.data?.[0]?.url || null;
+              creativeSpec.video_data.image_url = thumb || 'https://via.placeholder.com/1200x628.png?text=Miniatura';
+            } catch (e) {
+              creativeSpec.video_data.image_url = 'https://via.placeholder.com/1200x628.png?text=Miniatura';
+            }
+          }
           if (!videoId && imgHash) creativeSpec.link_data.image_hash = imgHash;
           if (!videoId && isWhatsApp) creativeSpec.link_data.call_to_action = whatsappCTA;
           if (!videoId && isFollowers) creativeSpec.link_data.call_to_action = followCTA;
@@ -777,6 +789,18 @@
         const creativeSpec = videoId
           ? { page_id: pageId, video_data: { video_id: videoId, message: body, title, call_to_action: isWhatsApp ? whatsappCTA : (isFollowers ? followCTA : { type: 'LEARN_MORE', value: { link: url } }) } }
           : { page_id: pageId, link_data: { link: isFollowers ? pageUrl : url, message: body, name: title, description: desc } };
+        if (videoId && imgHash) {
+          creativeSpec.video_data.image_hash = imgHash;
+        } else if (videoId && !imgHash) {
+          try {
+            const tr = await fetch(`${API}/${videoId}?fields=thumbnails&access_token=${encodeURIComponent(TOKEN)}`);
+            const td = await tr.json();
+            const thumb = td?.thumbnails?.data?.[0]?.uri || td?.thumbnails?.data?.[0]?.url || null;
+            creativeSpec.video_data.image_url = thumb || 'https://via.placeholder.com/1200x628.png?text=Miniatura';
+          } catch (e) {
+            creativeSpec.video_data.image_url = 'https://via.placeholder.com/1200x628.png?text=Miniatura';
+          }
+        }
         if (!videoId && imgHash) creativeSpec.link_data.image_hash = imgHash;
         if (!videoId && isWhatsApp) creativeSpec.link_data.call_to_action = whatsappCTA;
         if (!videoId && isFollowers) creativeSpec.link_data.call_to_action = followCTA;
@@ -1426,12 +1450,55 @@ Genera un anuncio de Facebook Ads. Responde EXCLUSIVAMENTE con este JSON (sin ma
     }
     if (file.type.startsWith('video/')) {
       window._adVideoFile = file;
-      window._adImageBlob = null;
+      // Generar miniatura a partir del video para evitar error de anuncio sin miniatura
       preview.style.display = 'none';
       videoPreview.src = URL.createObjectURL(file);
       videoPreview.style.display = 'block';
+      window._adImageBlob = null;
       const sizeMB = (file.size / 1024 / 1024).toFixed(2);
-      status.innerHTML = `✅ <strong>Video original conservado</strong> — ${sizeMB} MB. Se subirá a Meta sin recomprimir para mantener la máxima calidad posible.`;
+      status.innerHTML = `✅ <strong>Video original conservado</strong> — ${sizeMB} MB. Se subirá a Meta sin recomprimir para mantener la máxima calidad posible. Generando miniatura...`;
+      (async () => {
+        try {
+          const vid = document.createElement('video');
+          vid.preload = 'metadata';
+          vid.muted = true;
+          vid.src = URL.createObjectURL(file);
+          await new Promise((resolve, reject) => {
+            vid.addEventListener('loadeddata', resolve);
+            vid.addEventListener('error', () => reject(new Error('No se pudo cargar el video para generar miniatura')));
+          });
+          try { vid.currentTime = Math.min(1, Math.max(0.1, vid.duration / 2)); await new Promise(r => vid.addEventListener('seeked', r)); } catch(e) {}
+          const vw = vid.videoWidth || 1200;
+          const vh = vid.videoHeight || 675;
+          const maxW = 1200, maxH = 628;
+          const scale = Math.min(1, maxW / vw, maxH / vh);
+          const cw = Math.round(vw * scale);
+          const ch = Math.round(vh * scale);
+          const canvas = document.createElement('canvas');
+          canvas.width = cw; canvas.height = ch;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(vid, 0, 0, cw, ch);
+          const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.92));
+          if (blob) {
+            try {
+              const compressed = await compressImage(blob, 1200, 628);
+              window._adImageBlob = compressed;
+              preview.src = URL.createObjectURL(compressed);
+            } catch (e) {
+              window._adImageBlob = blob;
+              preview.src = URL.createObjectURL(blob);
+            }
+            preview.style.display = 'block';
+            const kb = (window._adImageBlob.size / 1024).toFixed(1);
+            status.innerHTML = `✅ Miniatura generada — ${kb} KB. Se subirá a Meta junto al video.`;
+          } else {
+            status.innerHTML = '⚠️ No se pudo generar miniatura; por favor agrega una imagen manualmente.';
+          }
+        } catch (err) {
+          console.error('Thumbnail error', err);
+          status.innerHTML = '⚠️ Error al generar miniatura; puedes subir una imagen manualmente.';
+        }
+      })();
       return;
     }
     window._adVideoFile = null;
