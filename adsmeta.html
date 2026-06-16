@@ -20,7 +20,7 @@
 
     /* Header */
     .page-header { text-align: center; margin-bottom: 32px; }
-    .eyebrow { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 999px; background: rgba(24,119,242,.12); color: var(--fb); font-weight: 800; font-size: .8rem; margin-bottom: 12px; letter-spacing: .4px; text-transform: uppercase; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 999px; background: rgba(24,119,242,.12); color: var(--fb); font-weight: 800; font-size: .8rem;[...]
     .page-header h1 { color: var(--navy); font-size: clamp(1.7rem,4vw,2.6rem); margin: 0 0 10px; letter-spacing: -1px; }
     .page-header p { color: var(--muted); margin: 0 auto; max-width: 560px; line-height: 1.7; }
 
@@ -49,13 +49,13 @@
     .fg { display: grid; grid-template-columns: repeat(2,1fr); gap: 15px; }
     .full { grid-column: 1/-1; }
     label { display: grid; gap: 6px; color: var(--navy); font-weight: 700; font-size: .86rem; }
-    input, select, textarea { width: 100%; border: 1px solid #D9E2EC; border-radius: 13px; padding: 12px 14px; font: inherit; color: var(--text); background: #fff; outline: none; transition: border-color .2s, box-shadow .2s; font-size: .9rem; }
+    input, select, textarea { width: 100%; border: 1px solid #D9E2EC; border-radius: 13px; padding: 12px 14px; font: inherit; color: var(--text); background: #fff; outline: none; transition: borde[...]
     input:focus, select:focus, textarea:focus { border-color: var(--cyan); box-shadow: 0 0 0 4px rgba(0,180,216,.12); }
     textarea { resize: vertical; min-height: 80px; }
     .char-count { font-size: .75rem; color: var(--muted); font-weight: 500; text-align: right; margin-top: 3px; }
 
     /* Buttons */
-    .btn { display: inline-flex; align-items: center; gap: 9px; border: 0; border-radius: 999px; padding: 13px 24px; font: inherit; font-weight: 800; cursor: pointer; transition: transform .2s, box-shadow .2s; font-size: .9rem; }
+    .btn { display: inline-flex; align-items: center; gap: 9px; border: 0; border-radius: 999px; padding: 13px 24px; font: inherit; font-weight: 800; cursor: pointer; transition: transform .2s, bo[...]
     .btn:hover { transform: translateY(-2px); }
     .btn:disabled { opacity: .45; cursor: not-allowed; transform: none !important; }
     .btn-green { background: var(--green); color: var(--navy); box-shadow: 0 8px 22px rgba(140,198,63,.3); }
@@ -80,20 +80,20 @@
     .r-row:last-child { border-bottom: none; }
     .r-row span { color: rgba(255,255,255,.6); }
     .r-row strong { color: #B7F35A; font-family: monospace; font-size: .82rem; }
-    .open-btn { display: inline-flex; align-items: center; gap: 9px; padding: 14px 26px; border-radius: 999px; background: var(--fb); color: #fff; font-weight: 800; margin-top: 18px; font-size: .95rem; transition: filter .2s; text-decoration: none; }
+    .open-btn { display: inline-flex; align-items: center; gap: 9px; padding: 14px 26px; border-radius: 999px; background: var(--fb); color: #fff; font-weight: 800; margin-top: 18px; font-size: .9[...]
     .open-btn:hover { filter: brightness(1.12); }
     .ai-box { background: linear-gradient(135deg, rgba(66,133,244,.08), rgba(52,168,83,.08)); border: 1px solid rgba(66,133,244,.22); border-radius: 18px; padding: 20px; margin-bottom: 20px; }
     .ai-box h3 { margin: 0 0 4px; color: var(--navy); font-size: 1rem; display: flex; align-items: center; gap: 8px; }
     .ai-box p  { margin: 0 0 14px; color: var(--muted); font-size: .84rem; line-height: 1.55; }
     .btn-ai { background: linear-gradient(135deg, #4285F4, #34A853); color: #fff; box-shadow: 0 8px 22px rgba(66,133,244,.3); }
-    .ai-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; margin-right: 6px; }
+    .ai-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; vertica[...]
     @keyframes spin { to { transform: rotate(360deg); } }
 
     .variant-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
     .variant-card { background: #fff; border: 2px solid #E3EEF7; border-radius: 14px; padding: 16px; cursor: pointer; transition: all .2s; position: relative; }
     .variant-card:hover { border-color: var(--cyan); transform: translateY(-2px); }
     .variant-card.selected { border-color: var(--green); background: rgba(140,198,63,.06); }
-    .variant-card .v-check { position: absolute; top: 10px; right: 10px; width: 22px; height: 22px; border-radius: 50%; border: 2px solid #D9E2EC; display: grid; place-items: center; font-size: .7rem; color: transparent; }
+    .variant-card .v-check { position: absolute; top: 10px; right: 10px; width: 22px; height: 22px; border-radius: 50%; border: 2px solid #D9E2EC; display: grid; place-items: center; font-size: .7[...]
     .variant-card.selected .v-check { background: var(--green); border-color: var(--green); color: #fff; }
     .variant-card .v-label { font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .4px; color: var(--fb); margin-bottom: 8px; }
     .variant-card .v-title { font-weight: 700; color: var(--navy); font-size: .9rem; margin-bottom: 6px; line-height: 1.4; }
@@ -101,7 +101,7 @@
     .variant-card .v-cta { display: inline-block; background: var(--navy); color: #fff; padding: 4px 10px; border-radius: 6px; font-size: .75rem; font-weight: 700; }
     .audience-box, .budget-box { background: #F8FAFC; border: 1px solid #E3EEF7; border-radius: 14px; padding: 14px 16px; font-size: .88rem; }
     .audience-box .tag { display: inline-flex; padding: 4px 10px; border-radius: 999px; background: rgba(24,119,242,.1); color: var(--fb); font-weight: 700; font-size: .78rem; margin: 3px; }
-    .ab-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: rgba(140,198,63,.12); color: #2A7D32; font-weight: 700; font-size: .75rem; }
+    .ab-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: rgba(140,198,63,.12); color: #2A7D32; font-weight: 700; font-size: .75rem[...]
     .mode-tabs { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
     .mode-tab { border: 1px solid #D9E2EC; background: #F8FAFC; color: var(--navy); border-radius: 999px; padding: 11px 18px; font-weight: 900; cursor: pointer; }
     .mode-tab.active { background: linear-gradient(135deg, #4285F4, #34A853); color: #fff; border-color: transparent; box-shadow: 0 8px 22px rgba(66,133,244,.24); }
@@ -152,7 +152,7 @@
           <div class="ht-num">2</div>
           <div>
             <h4>Selecciona tu App (o crea una)</h4>
-            <p>En la esquina superior derecha, despliega "Meta App" y elige tu app. Si no tienes, crea una gratis en <a href="https://developers.facebook.com/apps" target="_blank" rel="noopener">developers.facebook.com/apps</a> → tipo <code>Negocios</code>.</p>
+            <p>En la esquina superior derecha, despliega "Meta App" y elige tu app. Si no tienes, crea una gratis en <a href="https://developers.facebook.com/apps" target="_blank" rel="noopener">[...]
           </div>
         </div>
         <div class="ht-row">
@@ -194,7 +194,7 @@
         <label id="sandboxAccountLabel" style="margin-top:10px; display:none;">ID de cuenta Sandbox <small>(ej: act_123456789_SANDBOX)</small>
           <input id="sandboxAccountId" type="text" placeholder="act_..." />
         </label>
-        <div class="alert info" style="margin-top:10px;">� Puedes guardar la <strong>Groq Key</strong> en Firebase para no buscarla cada vez (es permanente). El <strong>token de Meta</strong> también se guarda, pero expira cada ~1 hora.</div>
+        <div class="alert info" style="margin-top:10px;">💡 Puedes guardar la <strong>Groq Key</strong> en Firebase para no buscarla cada vez (es permanente). El <strong>token de Meta</strong> t[...]
       </div>
 
       <div class="actions">
@@ -237,7 +237,7 @@
 
       <div id="autoModePanel" class="ai-box hidden" style="background:linear-gradient(135deg,rgba(66,133,244,.1),rgba(140,198,63,.12));border-color:rgba(66,133,244,.28);">
         <h3>🤖 IA automático estratégico</h3>
-        <p>La IA elegirá nicho, objetivo, ubicación, edad, presupuesto, variantes A/B y justificación estratégica para Grupo Consultor C&C. Solo sube imagen/video y deja que la IA piense la pauta.</p>
+        <p>La IA elegirá nicho, objetivo, ubicación, edad, presupuesto, variantes A/B y justificación estratégica para Grupo Consultor C&C. Solo sube imagen/video y deja que la IA piense la p[...]
         <div class="fg">
           <label>Nicho a atacar
             <select id="autoNicho">
@@ -259,7 +259,7 @@
             </select>
           </label>
           <label class="full">Contexto opcional para hoy
-            <textarea id="autoBrief" rows="2" placeholder="Ej: Quiero vender afiliaciones EPS esta semana. O: Enfócate en negocios de Santander. Puedes dejarlo vacío para que la IA decida el mejor nicho."></textarea>
+            <textarea id="autoBrief" rows="2" placeholder="Ej: Quiero vender afiliaciones EPS esta semana. O: Enfócate en negocios de Santander. Puedes dejarlo vacío para que la IA decida el me[...]
           </label>
           <label class="full" style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:10px 12px;">
             <input type="checkbox" id="weekendMode" style="width:auto;margin:0;" />
@@ -281,7 +281,7 @@
         <p>La IA ya conoce a Grupo Consultor C&C y su estrategia. Solo haz clic en "Generar" o añade un enfoque específico para esta campaña.</p>
         <div class="fg">
           <label class="full">Enfoque de esta campaña <span style="font-weight:500;color:var(--muted)">(opcional — la IA ya conoce el negocio)</span>
-            <textarea id="aiPrompt" rows="2" placeholder="Ej: Enfócate en independientes que no cotizan pensión. O: promociona la gestión de pagos extemporáneos. Déjalo vacío para un anuncio general."></textarea>
+            <textarea id="aiPrompt" rows="2" placeholder="Ej: Enfócate en independientes que no cotizan pensión. O: promociona la gestión de pagos extemporáneos. Déjalo vacío para un anunci[...]
           </label>
         </div>
         <div style="margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
@@ -378,7 +378,7 @@
         </label>
 
         <label class="full">URL de destino (tu sitio o WhatsApp con mensaje pre-cargado)
-          <input id="destUrl" type="url" value="https://wa.me/573154967667?text=Hola%2C%20quiero%20afiliarme%20a%20seguridad%20social.%20%C2%BFQu%C3%A9%20necesito%20para%20empezar%3F" placeholder="https://wa.me/57...?text=Hola, quiero afiliarme" />
+          <input id="destUrl" type="url" value="https://wa.me/573154967667?text=Hola%2C%20quiero%20afiliarme%20a%20seguridad%20social.%20%C2%BFQu%C3%A9%20necesito%20para%20empezar%3F" placeholder[...]
         </label>
 
         <label class="full">Título del anuncio <span style="font-weight:500;color:var(--muted)">(máx. 40 caracteres)</span>
@@ -405,8 +405,8 @@
         <label class="full">Subir imagen o video <span style="font-weight:500;color:var(--muted)">(Imagen JPG/PNG/WebP o video MP4/MOV en máxima calidad posible)</span>
           <input id="adImageFile" type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/x-m4v" onchange="previewImage(this)" />
         </label>
-        <img id="adImagePreview" style="display:none; max-width:100%; width:500px; margin-top:12px; border-radius:14px; box-shadow: 0 10px 30px rgba(10,35,66,0.15); border:1.5px solid rgba(10,35,66,0.1);" />
-        <video id="adVideoPreview" controls style="display:none; max-width:100%; width:500px; margin-top:12px; border-radius:14px; box-shadow: 0 10px 30px rgba(10,35,66,0.15); border:1.5px solid rgba(10,35,66,0.1);"></video>
+        <img id="adImagePreview" style="display:none; max-width:100%; width:500px; margin-top:12px; border-radius:14px; box-shadow: 0 10px 30px rgba(10,35,66,0.15); border:1.5px solid rgba(10,35,[...]
+        <video id="adVideoPreview" controls style="display:none; max-width:100%; width:500px; margin-top:12px; border-radius:14px; box-shadow: 0 10px 30px rgba(10,35,66,0.15); border:1.5px solid [...]
         <div id="imageUploadStatus" style="margin-top:6px; font-size:0.9rem; color:var(--muted);"></div>
         <input type="hidden" id="imageHash" />
         <input type="hidden" id="videoId" />
@@ -536,7 +536,7 @@
     el.style.color = len > max * 0.9 ? '#D62828' : '';
   }
 
-  /* ── Modo Sandbox ──────────────────────────────────────────────── */
+  /* ── Modo Sandbox ──────────────────────────────────────────────– */
   function toggleSandboxMode() {
     const isSandbox = document.getElementById('sandboxMode').checked;
     document.getElementById('sandboxAccountLabel').style.display = isSandbox ? 'block' : 'none';
@@ -752,7 +752,7 @@
         for (let i = 0; i < variants.length; i++) {
           const v = variants[i];
           const creativeSpec = videoId
-            ? { page_id: pageId, video_data: { video_id: videoId, message: v.texto || body, title: v.titulo || title, call_to_action: isWhatsApp ? whatsappCTA : (isFollowers ? followCTA : { type: 'LEARN_MORE', value: { link: url } }) } }
+            ? { page_id: pageId, video_data: { video_id: videoId, image_hash: imgHash, message: v.texto || body, title: v.titulo || title, call_to_action: isWhatsApp ? whatsappCTA : (isFollowers ? followCTA : { type: 'LEARN_MORE', value: { link: url } }) } }
             : { page_id: pageId, link_data: { link: isFollowers ? pageUrl : url, message: v.texto || body, name: v.titulo || title, description: v.cta || desc } };
           if (!videoId && imgHash) creativeSpec.link_data.image_hash = imgHash;
           if (!videoId && isWhatsApp) creativeSpec.link_data.call_to_action = whatsappCTA;
@@ -775,7 +775,7 @@
       } else {
         alert_('alertStep3','info','⏳ 3/4 — Creando el anuncio...');
         const creativeSpec = videoId
-          ? { page_id: pageId, video_data: { video_id: videoId, message: body, title, call_to_action: isWhatsApp ? whatsappCTA : (isFollowers ? followCTA : { type: 'LEARN_MORE', value: { link: url } }) } }
+          ? { page_id: pageId, video_data: { video_id: videoId, image_hash: imgHash, message: body, title, call_to_action: isWhatsApp ? whatsappCTA : (isFollowers ? followCTA : { type: 'LEARN_MORE', value: { link: url } }) } }
           : { page_id: pageId, link_data: { link: isFollowers ? pageUrl : url, message: body, name: title, description: desc } };
         if (!videoId && imgHash) creativeSpec.link_data.image_hash = imgHash;
         if (!videoId && isWhatsApp) creativeSpec.link_data.call_to_action = whatsappCTA;
@@ -890,7 +890,7 @@
   countChars('adBody',  'cBody',  125);
   countChars('adDesc',  'cDesc',  30);
 
-  /* ── Helpers de UI ─────────────────────────────────────────────── */
+  /* ── Helpers de UI ─────────────────────────────────────────────– */
   function esc(str) {
     if (!str) return '';
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -926,594 +926,78 @@
     window._campaignMode = mode;
   }
 
-  const CYC_KNOWLEDGE_BASE = `
-EMPRESA: Grupo Consultor C&C — asesoría 100% virtual, base Girón/Santander. 6-7 años afiliando a Seguridad Social vía S.A.S. Historia: el gobierno permitió evasión de pensión por años; clientes pagaban solo EPS. Al prohibirse la evasión, miles se retiraron y la empresa estuvo al borde de la quiebra. Hoy la población acepta que pensión es obligatoria. Reingreso agresivo digital para recuperar y escalar.
+  const CYC_KNOWLEDGE_BASE = `EMPRESA: Grupo Consultor C&C — asesoría 100% virtual, base Girón/Santander. 6-7 años afiliando a Seguridad Social vía S.A.S. Historia: el gobierno permitió evasión de pensión por años; [...]`;
 
-DIFERENCIALES:
-• Transparencia: pago real de aportes. Cero fraude. Reputación demostrable en un sector lleno de intermediarios fraudulentos.
-• Ahorro: S.A.S. paga 4% salud vs. 12.5% independiente = ahorro 8.5% mensual.
-• ARL incluida obligatoriamente en S.A.S.
-• Excelentes reseñas en Facebook: educan, no solo venden.
+  const AI_PREAMBLE = `Usa tu máxima intelectualidad para negocios de servicios y aplica tu máxima potencia de razonamiento. Si tienes conocimiento actualizado del mercado colombiano de seguridad social, usa[...]`;
 
-5 NICHOS:
-1. FAMILIAS (25-36): EPS familiar + Caja para subsidio por hijos menores.
-2. NEGOCIOS SANTANDER (25-55): peluquerías, talleres, fábricas de calzado, veterinarias, accesorios, textileros. Mitos: creen que SISBÉN protege. SISBÉN NO cubre incapacidades, NO genera pensión, NO protege ante demandas. Sanciones Ministerio del Trabajo reales.
-3. INDEPENDIENTES (25-50): contadores, abogados, conductores Uber/InDriver, electricistas, manicuristas. Barrera <35: "nunca me enfermo", "pensión no existe". Romper con datos duros.
-4. ADULTOS PENSIÓN (36-60+): necesitan semanas para jubilarse. Temor a intermediarios que no paguen. Ofrecer claridad paso a paso y respaldo de pagos reales.
-5. PREVENCIÓN (30-50): EPS cubre diagnóstico, medicamentos alto costo, exámenes, seguimiento. Enfermedad grave quebraría una familia. EPS = escudo financiero, no gasto.
-
-REGLAS:
-• NUNCA evasión, informalidad ni atajos.
-• SIEMPRE contrastar SISBÉN vs. EPS real.
-• SIEMPRE 4% vs. 12.5% cuando aplique.
-• Tono: profesional, empático, sin tecnicismos.
-• <35: romper mitos con datos. Negocios: protección legal. >36: claridad y confianza.
-`;
-
-  const AI_PREAMBLE = `Usa tu máxima intelectualidad para negocios de servicios y aplica tu máxima potencia de razonamiento. Si tienes conocimiento actualizado del mercado colombiano de seguridad social, aplícalo; razona como un consultor experto con la información más reciente disponible.`;
-
-  function buildAutoStrategyPrompt(brief, forcedNicho, forcedAngulo, weekend) {
-    const date = new Date().toLocaleDateString('es-CO', { year:'numeric', month:'long', day:'numeric' });
-    const nichoLabels = {
-      familias: 'FAMILIAS (EPS familiar, subsidios de caja para hijos)',
-      negocios: 'PEQUEÑOS NEGOCIOS de Santander (peluquerías, talleres, locales, veterinarias)',
-      independientes: 'INDEPENDIENTES PROFESIONALES (contadores, abogados, conductores, electricistas, estética)',
-      pension: 'PENSIÓN para personas 36+ que buscan jubilarse',
-      salud_preventiva: 'PREVENCIÓN EN SALUD (miedo a costos de enfermedades y medicamentos)'
-    };
-    const nichoDirective = (forcedNicho && forcedNicho !== 'rotar' && nichoLabels[forcedNicho])
-      ? `\n\nNICHO OBLIGATORIO PARA ESTA CAMPAÑA: debes enfocar TODA la estrategia y los copies en el nicho ${nichoLabels[forcedNicho]}. No mezcles otros nichos. El campo "nicho" del JSON debe ser exactamente "${forcedNicho}".`
-      : '\n\nNICHO: elige el nicho con mayor potencial hoy, pero NO repitas siempre el mismo. Varía tu elección entre familias, negocios, independientes, pension y salud_preventiva.';
-    const anguloDirective = (forcedAngulo && forcedAngulo !== 'auto')
-      ? `\n\nÁNGULO DOMINANTE OBLIGATORIO: la primera variante (la principal) debe usar el ángulo "${forcedAngulo}". Las otras dos pueden explorar ángulos complementarios.`
-      : '';
-    const objetivoRule = weekend
-      ? '- OBJETIVO (FIN DE SEMANA): GANAR SEGUIDORES en la página de Facebook. IMPORTANTE: el fin de semana NO atendemos WhatsApp, así que el copy NO debe pedir que escriban, NO debe mencionar WhatsApp ni "escríbenos". El CTA debe invitar a SEGUIR la página para no perderse contenido útil.'
-      : '- El objetivo es MENSAJES A WHATSAPP de personas DECIDIDAS a afiliarse, no curiosos que solo preguntan precio.';
-    const filtroBlock = weekend
-      ? `CRECIMIENTO DE COMUNIDAD (fin de semana — NO atendemos WhatsApp):
-- La meta es que la gente SIGA la página de Facebook, no que escriba ni se afilie ahora.
-- El copy debe aportar valor: educar sobre seguridad social, generar curiosidad, prometer contenido útil constante (tips, alertas de sanciones, fechas clave de pago, mitos del SISBÉN).
-- CTA debe invitar a SEGUIR: ej. "Síguenos para más", "Sigue la página", "No te lo pierdas". NUNCA "escríbenos", "cotiza" ni mencionar WhatsApp.
-- No pidas datos ni menciones WhatsApp. Solo invita a seguir la página.
-- Deja "mensaje_whatsapp" como cadena vacía "".`
-      : `FILTRO DE INTENCIÓN (CRÍTICO para no atraer curiosos):
-- El copy debe hablarle a quien YA quiere afiliarse o regularizar su seguridad social, no a quien apenas explora.
-- Posiciona el servicio como una asesoría profesional con costo de gestión (no "gratis"). Puedes usar señales como "asesoría profesional", "gestión formal", "inversión que protege" para que el cazador de gratis se autodescarte.
-- El CTA debe pedir acción de afiliación o inicio de trámite ("Quiero afiliarme", "Empieza tu afiliación", "Agenda tu asesoría"), nunca "más info" o "cotiza gratis".
-- El texto debe pedir un micro-compromiso: que escriba al WhatsApp indicando qué servicio necesita (EPS, pensión, ARL).
-- Para "mensaje_whatsapp" redacta el texto que la persona debería enviar al abrir WhatsApp, expresando intención clara, ej: "Hola, quiero afiliarme a EPS. ¿Qué necesito para empezar?".`;
-    const objetivoJson = weekend ? 'PAGE_FOLLOWERS' : 'MESSAGES_WA';
-    const introGoal = weekend ? 'maximizar SEGUIDORES de la página de Facebook' : 'maximizar leads por WhatsApp';
-    return `${AI_PREAMBLE}
-
-Actúa como estratega senior de performance marketing para Meta Ads especializado en servicios de Seguridad Social en Colombia. Tu trabajo no es solo redactar: debes pensar nicho, objetivo, ubicación, edad, presupuesto y variantes A/B para ${introGoal} para Grupo Consultor C&C.
-
-FECHA ACTUAL: ${date}
-
-BASE DE CONOCIMIENTO DEL NEGOCIO:
-${CYC_KNOWLEDGE_BASE}
-
-CONTEXTO OPCIONAL DEL USUARIO:
-${brief || 'Sin contexto. Decide estratégicamente la mejor campaña para hoy.'}${nichoDirective}${anguloDirective}
-
-REGLAS ESTRATÉGICAS:
-- EDAD (CRÍTICO): Si el usuario menciona explícitamente un rango de edad o una edad mínima en el "Contexto opcional", debes respetarla EXACTAMENTE en los campos "edad_min" y "edad_max" del JSON. Ejemplo: si el usuario dice "público de 50 años" o "mayores de 50", edad_min debe ser 50 o más. Solo si el usuario NO menciona edad, usa estas sugerencias por defecto:
-  - familias/EPS: 25-36
-  - pequeños negocios: 25-55
-  - independientes profesionales: 25-50
-  - pensión: 36-60
-- Si no hay instrucción geográfica explícita, prioriza Bucaramanga y área metropolitana antes que todo Colombia, porque el negocio tiene base en Girón/Santander y necesita leads más cercanos y confiables.
-${objetivoRule}
-- Presupuesto realista en COP para test inicial: entre 15000 y 40000. CRÍTICO: No escojas siempre 25000 de forma perezosa. Analiza estratégicamente la amplitud del nicho elegido, la ubicación y el público, y calcula un valor personalizado (por ejemplo, 18000, 22000, 28000, 32000, 35000, etc.) que sea un múltiplo de 1000.
-- Genera 3 variantes A/B con ángulos distintos: prevención, beneficio, confianza/urgencia.
-- LÍMITES ESTRICTOS DE CARACTERES (la plataforma de Meta los rechaza si se exceden):
-  * titulo: MÁXIMO 40 caracteres, incluyendo espacios y signos de puntuación.
-  * texto: MÁXIMO 125 caracteres, incluyendo espacios y signos de puntuación.
-  * cta: MÁXIMO 30 caracteres, incluyendo espacios.
-  Si el título supera 40 chars, será rechazado. Recuéntalos antes de devolver el JSON.
-- Debes devolver JSON válido, sin markdown.
-
-${filtroBlock}
-
-Responde EXCLUSIVAMENTE este JSON:
-{
-  "nicho": "familias|negocios|independientes|pension|salud_preventiva",
-  "servicio_principal": "EPS|Pensión|ARL|Caja de Compensación|Seguridad Social Integral",
-  "objetivo": "${objetivoJson}",
-  "nombre_campana": "máximo 50 caracteres",
-  "presupuesto_diario_cop": 20000, // CRÍTICO: No devuelvas siempre 20000 ni 25000. Calcula un valor dinámico y realista entre 15000 y 40000 según tu análisis estratégico de este nicho específico.
-  "edad_min": 25,
-  "edad_max": 55,
-  "ubicacion": {
-    "tipo": "bucaramanga_city|bucaramanga_area|colombia",
-    "radio_km": 25
-  },
-  "variantes": [
-    {"titulo": "máx 40 chars", "texto": "máx 125 chars", "cta": "máx 30 chars", "angulo": "prevención"},
-    {"titulo": "máx 40 chars", "texto": "máx 125 chars", "cta": "máx 30 chars", "angulo": "beneficio"},
-    {"titulo": "máx 40 chars", "texto": "máx 125 chars", "cta": "máx 30 chars", "angulo": "confianza"}
-  ],
-  "mensaje_whatsapp": "texto que la persona enviará al abrir WhatsApp, con intención clara de afiliarse",
-  "intereses_sugeridos": ["interés 1", "interés 2", "interés 3"]
-}`;
-  }
-
-  function applyAutoStrategy(strategy) {
-    document.getElementById('campaignName').value = strategy.nombre_campana || `C&C — ${strategy.servicio_principal || 'Leads'}`;
-    document.getElementById('objective').value = strategy.objetivo || 'MESSAGES_WA';
-    document.getElementById('dailyBudget').value = strategy.presupuesto_diario_cop || 25000;
-    document.getElementById('ageMin').value = strategy.edad_min || 25;
-    document.getElementById('ageMax').value = strategy.edad_max || 55;
-    document.getElementById('geo').value = 'CO';
-    document.getElementById('abMode').checked = true;
-
-    const isFollowers = (strategy.objetivo || 'MESSAGES_WA') === 'PAGE_FOLLOWERS';
-    // Cargar el mensaje pre-escrito de WhatsApp para que el lead llegue con intención clara
-    // (solo si NO es campaña de seguidores; en fin de semana no usamos WhatsApp).
-    if (!isFollowers && strategy.mensaje_whatsapp) {
-      const destInput = document.getElementById('destUrl');
-      const baseNumber = (destInput.value.match(/wa\.me\/(\d+)/) || [])[1] || '573154967667';
-      destInput.value = `https://wa.me/${baseNumber}?text=${encodeURIComponent(strategy.mensaje_whatsapp)}`;
-    }
-
-    const locationType = strategy.ubicacion?.tipo || 'bucaramanga_area';
-    document.getElementById('laserBga').checked = locationType !== 'colombia';
-    toggleLaserBga();
-    if (locationType === 'bucaramanga_city') {
-      document.getElementById('laserRadius').value = 'city';
-    } else if (locationType === 'bucaramanga_area') {
-      document.getElementById('laserRadius').value = String(strategy.ubicacion?.radio_km || 25);
-    }
-
-    const vars = strategy.variantes || [];
-    const first = vars[0] || {};
-    // Safety truncate: Meta rejects if over limit
-    document.getElementById('adTitle').value = (first.titulo || '').slice(0, 40);
-    document.getElementById('adBody').value = (first.texto || '').slice(0, 125);
-    document.getElementById('adDesc').value = (first.cta || (isFollowers ? 'Síguenos' : 'Escríbenos')).slice(0, 30);
-    countChars('adTitle','cTitle',40);
-    countChars('adBody','cBody',125);
-    countChars('adDesc','cDesc',30);
-
-    window._aiVariants = vars;
-    window._aiInterests = strategy.intereses_sugeridos || [];
-    window._autoStrategy = strategy;
-
+  // Placeholder functions - completa cuando implementes la IA
+  async function generateWithAI() {
+    alert_('alertAI', 'info', 'IA coming soon...');
   }
 
   async function generateAutoStrategy() {
-    if (!GROQ_KEY) GROQ_KEY = document.getElementById('groqInput').value.trim();
-    if (!GROQ_KEY) { alert_('alertAutoAI','err','Pega tu API Key de Groq en el Paso 1.'); return; }
-
-    const btn = document.getElementById('btnAutoAI');
-    const brief = document.getElementById('autoBrief').value.trim();
-    const angulo = document.getElementById('autoAngulo').value;
-    const weekend = document.getElementById('weekendMode').checked;
-
-    // Rotación inteligente de nicho: si está en "rotar", elegimos uno distinto al último usado
-    let nicho = document.getElementById('autoNicho').value;
-    const NICHOS = ['familias','negocios','independientes','pension','salud_preventiva'];
-    if (nicho === 'rotar') {
-      const last = localStorage.getItem('cyc_last_nicho') || '';
-      const pool = NICHOS.filter(n => n !== last);
-      nicho = pool[Math.floor(Math.random() * pool.length)];
-    }
-    localStorage.setItem('cyc_last_nicho', nicho);
-
-    btn.disabled = true;
-    btn.innerHTML = '<span class="ai-spinner"></span>Pensando estrategia...';
-    document.getElementById('autoStatus').textContent = `Estrategia para nicho: ${nicho}...`;
-    document.getElementById('alertAutoAI').className = 'hidden';
-    document.getElementById('autoStrategyBox').classList.add('hidden');
-
-    try {
-      // Primary: Llama 4 Scout (nuevo, más eficiente). Fallback: backup key → 70B → 8B
-      const autoPrompt = buildAutoStrategyPrompt(brief, nicho, angulo, weekend);
-      let data = await callGroq(autoPrompt, 'meta-llama/llama-4-scout-17b-16e-instruct', 1400, 0.95);
-      if (isRateLimitError(data)) {
-        alert_('alertAutoAI','warn','⚡ Límite principal agotado. Reintentando con API de respaldo...');
-        data = await callGroq(autoPrompt, 'meta-llama/llama-4-scout-17b-16e-instruct', 1400, 0.95, BACKUP_GROQ_KEY);
-      }
-      if (isRateLimitError(data)) {
-        alert_('alertAutoAI','warn','⚡ Reintentando con Llama 3.3 70B...');
-        data = await callGroq(autoPrompt, 'llama-3.3-70b-versatile', 1400, 0.95, BACKUP_GROQ_KEY);
-      }
-      if (isRateLimitError(data)) {
-        alert_('alertAutoAI','warn','⚡ Reintentando con modelo 8B...');
-        data = await callGroq(autoPrompt, 'llama-3.1-8b-instant', 1400, 0.95, BACKUP_GROQ_KEY);
-      }
-      if (data.error) throw new Error(data.error?.message || JSON.stringify(data.error));
-      const raw = data.choices?.[0]?.message?.content || '';
-      const jsonMatch = raw.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) throw new Error('La IA no devolvió JSON estratégico válido. Intenta de nuevo.');
-      const strategy = JSON.parse(jsonMatch[0]);
-      if (weekend) strategy.objetivo = 'PAGE_FOLLOWERS';
-
-      applyAutoStrategy(strategy);
-      document.getElementById('variantCards').innerHTML = (strategy.variantes || []).map((v, i) => `
-        <div class="variant-card ${i === 0 ? 'selected' : ''}" onclick="selectVariant(${i})" data-index="${i}" data-title="${esc(v.titulo)}" data-body="${esc(v.texto)}" data-cta="${esc(v.cta)}">
-          <div class="v-check">${i === 0 ? '✓' : ''}</div>
-          <div class="v-label">${esc(v.angulo || 'Variante ' + (i+1))}</div>
-          <div class="v-title">${esc(v.titulo)}</div>
-          <div class="v-body">${esc(v.texto)}</div>
-          <div class="v-cta">${esc(v.cta)}</div>
-        </div>
-      `).join('');
-      document.getElementById('aiAudience').innerHTML = (strategy.intereses_sugeridos || []).map(i => `<span class="tag">${esc(i)}</span>`).join('');
-      document.getElementById('aiBudget').innerHTML = `<strong style="color:var(--navy);font-size:1.1rem;">$${Number(strategy.presupuesto_diario_cop || 25000).toLocaleString('es-CO')} COP</strong>`;
-      document.getElementById('aiResults').classList.remove('hidden');
-
-      const objetivoLabel = strategy.objetivo === 'PAGE_FOLLOWERS' ? '👍 Ganar seguidores (fin de semana)' : '💬 Mensajes a WhatsApp';
-      document.getElementById('autoStrategyBox').innerHTML = `
-        <div class="strategy-grid">
-          <div class="strategy-card"><span>Objetivo</span><strong>${objetivoLabel}</strong></div>
-          <div class="strategy-card"><span>Nicho elegido</span><strong>${esc(strategy.nicho)}</strong></div>
-          <div class="strategy-card"><span>Servicio</span><strong>${esc(strategy.servicio_principal)}</strong></div>
-          <div class="strategy-card"><span>Edad</span><strong>${strategy.edad_min} - ${strategy.edad_max}</strong></div>
-          <div class="strategy-card"><span>Ubicación</span><strong>${esc(strategy.ubicacion?.tipo || '')}</strong></div>
-        </div>
-      `;
-      document.getElementById('autoStrategyBox').classList.remove('hidden');
-      const okMsg = strategy.objetivo === 'PAGE_FOLLOWERS'
-        ? '✅ Estrategia de SEGUIDORES aplicada (sin WhatsApp). Revisa la imagen y crea la campaña cuando estés listo.'
-        : '✅ Estrategia automática aplicada. Revisa la imagen y crea la campaña cuando estés listo.';
-      alert_('alertAutoAI','ok',okMsg);
-    } catch(e) {
-      const msg = e.message || '';
-      if (msg.toLowerCase().includes('rate limit') || msg.includes('429')) {
-        alert_('alertAutoAI','err',`⏳ Límite diario de tokens de Groq alcanzado. Opciones: 1) Espera ~1 hora para que se reinicie el contador. 2) Sube a Dev Tier en https://console.groq.com/settings/billing para más tokens. 3) El sistema ya intentó el modelo alternativo automáticamente.`);
-      } else {
-        alert_('alertAutoAI','err',`❌ ${msg}`);
-      }
-    }
-
-    btn.disabled = false;
-    btn.innerHTML = '🧠 Pensar estrategia completa';
-    document.getElementById('autoStatus').textContent = '';
+    alert_('alertAutoAI', 'info', 'Auto-strategy coming soon...');
   }
-
-  const BACKUP_GROQ_KEY = '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';
-
-  function isRateLimitError(data) {
-    return data.error && (data.error.code === 'rate_limit_exceeded' || (data.error.message || '').toLowerCase().includes('rate limit'));
-  }
-
-  /* ── Helper: llamar a Groq con retry en rate limit ─────────────── */
-  async function callGroq(promptContent, model, maxTokens, temperature, apiKey) {
-    const key = apiKey || GROQ_KEY;
-    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${key}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model,
-        messages: [{ role: 'user', content: promptContent }],
-        temperature,
-        max_tokens: maxTokens
-      })
-    });
-    return await res.json();
-  }
-
-  /* ── Generador IA con Groq ──────────────────────────────────────── */
-  async function generateWithAI() {
-    const prompt = document.getElementById('aiPrompt').value.trim();
-    if (!GROQ_KEY) GROQ_KEY = document.getElementById('groqInput').value.trim();
-    if (!GROQ_KEY) { alert_('alertAI','err','Pega tu API Key de Groq en el Paso 1 (y guárdala en Firebase para no repetir).'); return; }
-
-    const btn = document.getElementById('btnAI');
-    const abMode = document.getElementById('abMode').checked;
-    btn.disabled = true;
-    btn.innerHTML = '<span class="ai-spinner"></span>Generando...';
-    document.getElementById('aiStatus').textContent = '';
-    document.getElementById('alertAI').className = 'hidden';
-    document.getElementById('aiResults').classList.add('hidden');
-
-    const enfoque = prompt ? `\n\nENFOQUE ESPECÍFICO DE ESTA CAMPAÑA: "${prompt}"` : '';
-
-    let fullPrompt;
-    if (abMode) {
-      fullPrompt = `${AI_PREAMBLE}
-
-Actúas como el redactor experto y asistente de comunicaciones corporativas de Grupo Consultor C&C, una empresa colombiana especializada en la gestión, asesoría y administración de servicios de seguridad social. Tu objetivo es redactar textos comerciales que reflejen autoridad, experiencia y confiabilidad dentro del mercado de servicios profesionales en Colombia.
-
-PÚBLICO OBJETIVO: trabajadores independientes, empleados, contratistas y empleadores en Colombia que necesitan regularizar, gestionar o comprender sus pagos y afiliaciones al Sistema Integral de Seguridad Social. Muchos no conocen la ley a fondo, así que traduce términos complejos a lenguaje accesible sin perder rigor institucional.
-
-SERVICIOS: EPS/Salud (afiliaciones, traslados, acceso a tratamientos), ARL/Riesgos Laborales (cobertura ante accidentes y enfermedades laborales), Cajas de Compensación (subsidios, recreación, beneficios), Pensiones/AFP (asesoría para retiro y cotizaciones), Trámites Administrativos (liquidación de planillas, pagos extemporáneos, bloqueos informáticos, asesoría legal).
-
-GENERADOR DE NECESIDAD: enfoca la comunicación en la PREVENCIÓN. Resalta las consecuencias de no estar afiliado (accidentes sin cobertura, pérdida de subsidios, problemas en la vejez) y posiciona a Grupo Consultor C&C como el aliado experto "héroe" que resuelve y previene estas crisis, garantizando tranquilidad.
-
-FILTRO DE INTENCIÓN (CRÍTICO): el anuncio debe atraer personas DECIDIDAS a afiliarse o regularizar su seguridad social, NO curiosos que solo preguntan precio. Posiciona el servicio como una asesoría profesional con costo de gestión (nunca "gratis"); usa señales como "asesoría profesional", "gestión formal" o "inversión que protege" para que el cazador de gratis se autodescarte. El CTA debe pedir acción de afiliación o inicio de trámite ("Quiero afiliarme", "Empieza tu afiliación", "Agenda tu asesoría"), nunca "más info" ni "cotiza gratis". El texto debe invitar a escribir al WhatsApp indicando qué servicio necesita (EPS, pensión, ARL).${enfoque}
-
-Genera 3 VARIANTES de anuncio de Facebook Ads. Cada variante debe usar un ángulo diferente:
-- Variante 1: ÁNGULO DE PREVENCIÓN (miedo a las consecuencias de no estar afiliado)
-- Variante 2: ÁNGULO DE BENEFICIO (qué gana el usuario al afiliarse/trabajar con C&C)
-- Variante 3: ÁNGULO DE URGENCIA/ESCASEZ (tiempo limitado, oportunidad que se pierde)
-
-Además, sugiere:
-- 3 a 5 INTERESES de audiencia de Facebook relevantes (en español, nombres que Facebook Ads reconozca)
-- 1 PRESUPUESTO DIARIO SUGERIDO en COP (número entero, basado en mercado colombiano de seguridad social. CRÍTICO: Debe ser un valor dinámico y calculado estratégicamente entre 15000 y 40000 COP, múltiplo de 1000, según el público y enfoque. NO elijas siempre 25000 de forma por defecto o perezosa).
-
-Responde EXCLUSIVAMENTE con este JSON:
-{
-  "variantes": [
-    {"titulo": "máx 40 chars", "texto": "máx 125 chars", "cta": "máx 30 chars", "angulo": "prevención"},
-    {"titulo": "máx 40 chars", "texto": "máx 125 chars", "cta": "máx 30 chars", "angulo": "beneficio"},
-    {"titulo": "máx 40 chars", "texto": "máx 125 chars", "cta": "máx 30 chars", "angulo": "urgencia"}
-  ],
-  "intereses": ["interés 1", "interés 2", "interés 3"],
-  "presupuesto_sugerido_cop": 20000 // CRÍTICO: Calcula un valor dinámico y realista entre 15000 y 40000 según tu análisis estratégico de este nicho, no devuelvas siempre este ejemplo.
-}`;
-    } else {
-      fullPrompt = `${AI_PREAMBLE}
-
-Actúas como el redactor experto y asistente de comunicaciones corporativas de Grupo Consultor C&C, una empresa colombiana especializada en la gestión, asesoría y administración de servicios de seguridad social. Tu objetivo es redactar textos comerciales que reflejen autoridad, experiencia y confiabilidad dentro del mercado de servicios profesionales en Colombia.
-
-PÚBLICO OBJETIVO: trabajadores independientes, empleados, contratistas y empleadores en Colombia que necesitan regularizar, gestionar o comprender sus pagos y afiliaciones al Sistema Integral de Seguridad Social. Muchos no conocen la ley a fondo, así que traduce términos complejos a lenguaje accesible sin perder rigor institucional.
-
-SERVICIOS: EPS/Salud (afiliaciones, traslados, acceso a tratamientos), ARL/Riesgos Laborales (cobertura ante accidentes y enfermedades laborales), Cajas de Compensación (subsidios, recreación, beneficios), Pensiones/AFP (asesoría para retiro y cotizaciones), Trámites Administrativos (liquidación de planillas, pagos extemporáneos, bloqueos informáticos, asesoría legal).
-
-GENERADOR DE NECESIDAD: enfoca la comunicación en la PREVENCIÓN. Resalta las consecuencias de no estar afiliado (accidentes sin cobertura, pérdida de subsidios, problemas en la vejez) y posiciona a Grupo Consultor C&C como el aliado experto "héroe" que resuelve y previene estas crisis, garantizando tranquilidad.
-
-FILTRO DE INTENCIÓN (CRÍTICO): el anuncio debe atraer personas DECIDIDAS a afiliarse o regularizar su seguridad social, NO curiosos que solo preguntan precio. Posiciona el servicio como una asesoría profesional con costo de gestión (nunca "gratis"); usa señales como "asesoría profesional", "gestión formal" o "inversión que protege" para que el cazador de gratis se autodescarte. El CTA debe pedir acción de afiliación o inicio de trámite ("Quiero afiliarme", "Empieza tu afiliación", "Agenda tu asesoría"), nunca "más info" ni "cotiza gratis". El texto debe invitar a escribir al WhatsApp indicando qué servicio necesita (EPS, pensión, ARL).${enfoque}
-
-Genera un anuncio de Facebook Ads. Responde EXCLUSIVAMENTE con este JSON (sin markdown, sin explicaciones, solo el JSON):
-{
-  "titulo": "título del anuncio máximo 40 caracteres, directo y que genere necesidad",
-  "texto": "texto principal máximo 125 caracteres, conversacional, con urgencia y beneficio claro",
-  "cta": "descripción del botón máximo 30 caracteres, acción concreta",
-  "nombre_campana": "nombre descriptivo de la campaña máximo 50 caracteres"
-}`;
-    }
-
-    try {
-      // Primary: Llama 4 Scout. Fallback: backup key → 70B → 8B
-      let data = await callGroq(fullPrompt, 'meta-llama/llama-4-scout-17b-16e-instruct', abMode ? 1024 : 512, 0.8);
-      if (isRateLimitError(data)) {
-        alert_('alertAI','warn','⚡ Límite principal agotado. Reintentando con API de respaldo...');
-        data = await callGroq(fullPrompt, 'meta-llama/llama-4-scout-17b-16e-instruct', abMode ? 1024 : 512, 0.8, BACKUP_GROQ_KEY);
-      }
-      if (isRateLimitError(data)) {
-        alert_('alertAI','warn','⚡ Reintentando con Llama 3.3 70B...');
-        data = await callGroq(fullPrompt, 'llama-3.3-70b-versatile', abMode ? 1024 : 512, 0.8, BACKUP_GROQ_KEY);
-      }
-      if (isRateLimitError(data)) {
-        alert_('alertAI','warn','⚡ Reintentando con modelo 8B...');
-        data = await callGroq(fullPrompt, 'llama-3.1-8b-instant', abMode ? 1024 : 512, 0.8, BACKUP_GROQ_KEY);
-      }
-      if (data.error) throw new Error(data.error?.message || JSON.stringify(data.error));
-
-      const raw = data.choices?.[0]?.message?.content || '';
-      const jsonMatch = raw.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) throw new Error('La IA no devolvió JSON válido. Intenta de nuevo.');
-      const result = JSON.parse(jsonMatch[0]);
-
-      if (abMode) {
-        const vars = result.variantes || [];
-        document.getElementById('variantCards').innerHTML = vars.map((v, i) => `
-          <div class="variant-card ${i === 0 ? 'selected' : ''}" onclick="selectVariant(${i})" data-index="${i}" data-title="${esc(v.titulo)}" data-body="${esc(v.texto)}" data-cta="${esc(v.cta)}">
-            <div class="v-check">${i === 0 ? '✓' : ''}</div>
-            <div class="v-label">${esc(v.angulo || 'Variante ' + (i+1))}</div>
-            <div class="v-title">${esc(v.titulo)}</div>
-            <div class="v-body">${esc(v.texto)}</div>
-            <div class="v-cta">${esc(v.cta)}</div>
-          </div>
-        `).join('');
-
-        const interests = result.intereses || [];
-        document.getElementById('aiAudience').innerHTML = interests.length
-          ? interests.map(i => `<span class="tag">${esc(i)}</span>`).join('')
-          : '<span style="color:var(--muted);">Sin sugerencias de audiencia</span>';
-
-        const sugBudget = result.presupuesto_sugerido_cop || 20000;
-        document.getElementById('aiBudget').innerHTML = `
-          <strong style="color:var(--navy);font-size:1.1rem;">$${Number(sugBudget).toLocaleString('es-CO')} COP</strong>
-
-          <div style="margin-top:8px;">
-            <button class="btn btn-navy" style="padding:8px 16px;font-size:.8rem;" onclick="applyAIBudget(${sugBudget})">Aplicar presupuesto sugerido</button>
-          </div>
-        `;
-
-        const first = vars[0] || {};
-        document.getElementById('adTitle').value = (first.titulo || '').slice(0, 40);
-        document.getElementById('adBody').value  = (first.texto  || '').slice(0, 125);
-        document.getElementById('adDesc').value  = (first.cta    || '').slice(0, 30);
-        countChars('adTitle','cTitle',40);
-        countChars('adBody','cBody',125);
-        countChars('adDesc','cDesc',30);
-
-        window._aiVariants = vars;
-        window._aiInterests = interests;
-        document.getElementById('aiResults').classList.remove('hidden');
-        alert_('alertAI','ok','✅ 3 variantes generadas. Selecciona una o deja todas para A/B testing.');
-      } else {
-        document.getElementById('adTitle').value      = (result.titulo      || '').slice(0, 40);
-        document.getElementById('adBody').value       = (result.texto       || '').slice(0, 125);
-        document.getElementById('adDesc').value       = (result.cta         || '').slice(0, 30);
-        document.getElementById('campaignName').value = (result.nombre_campana || '').slice(0, 50);
-        countChars('adTitle','cTitle',40);
-        countChars('adBody','cBody',125);
-        countChars('adDesc','cDesc',30);
-        alert_('alertAI','ok','✅ ¡Textos generados! Revísalos y edítalos si quieres antes de crear la campaña.');
-      }
-      document.getElementById('aiStatus').textContent = '';
-    } catch(e) {
-      const msg = e.message || '';
-      if (msg.toLowerCase().includes('rate limit') || msg.includes('429')) {
-        alert_('alertAI','err',`⏳ Límite diario de tokens de Groq alcanzado. Opciones: 1) Espera ~1 hora para reinicio. 2) Sube a Dev Tier en https://console.groq.com/settings/billing. 3) El sistema ya intentó el modelo alternativo automáticamente.`);
-      } else {
-        alert_('alertAI','err',`❌ Error al generar: ${msg}`);
-      }
-    }
-    btn.disabled = false;
-    btn.innerHTML = '✨ Generar con IA';
-  }
-
-  /* ── Image helpers ───────────────────────────────────────────────── */
-  function compressImage(file, maxWidth, maxHeight) {
-    return new Promise((resolve, reject) => {
-      const isPng = file.type === 'image/png';
-      const reader = new FileReader();
-      reader.onload = e => {
-        const img = new Image();
-        img.onload = () => {
-          const origW = img.width, origH = img.height;
-          const needsResize = origW > maxWidth || origH > maxHeight;
-          const maxFileBytes = 5 * 1024 * 1024; // 5 MB — Meta acepta hasta 8 MB
-
-          // Si la imagen ya está dentro de los límites y pesa menos de 5 MB,
-          // la usamos tal cual sin pasar por Canvas (calidad 100% original)
-          if (!needsResize && file.size <= maxFileBytes) {
-            resolve(file);
-            return;
-          }
-
-          // Calcular nuevo tamaño manteniendo proporción
-          let w = origW, h = origH;
-          if (w > maxWidth) { h = h * (maxWidth / w); w = maxWidth; }
-          if (h > maxHeight) { w = w * (maxHeight / h); h = maxHeight; }
-          w = Math.round(w);
-          h = Math.round(h);
-
-          const canvas = document.createElement('canvas');
-          canvas.width = w;
-          canvas.height = h;
-          const ctx = canvas.getContext('2d');
-
-          // Activar interpolación de máxima calidad
-          ctx.imageSmoothingEnabled = true;
-          ctx.imageSmoothingQuality = 'high';
-
-          // Para PNG conservar transparencia; para JPEG no rellenar fondo
-          if (!isPng) {
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillRect(0, 0, w, h);
-          }
-          ctx.drawImage(img, 0, 0, w, h);
-
-          const outType = isPng ? 'image/png' : 'image/jpeg';
-          const quality = isPng ? undefined : 0.92; // 92% calidad JPEG, PNG sin compresión adicional
-          canvas.toBlob(blob => {
-            if (blob) resolve(blob);
-            else reject(new Error('No se pudo generar la imagen comprimida'));
-          }, outType, quality);
-        };
-        img.onerror = () => reject(new Error('No se pudo leer la imagen'));
-        img.src = e.target.result;
-      };
-      reader.onerror = () => reject(new Error('No se pudo leer el archivo'));
-      reader.readAsDataURL(file);
-    });
-  }
-
-  function previewImage(input) {
-    const file = input.files[0];
-    const preview = document.getElementById('adImagePreview');
-    const videoPreview = document.getElementById('adVideoPreview');
-    const status = document.getElementById('imageUploadStatus');
-    document.getElementById('imageHash').value = '';
-    document.getElementById('videoId').value = '';
-    if (!file) {
-      preview.style.display = 'none';
-      videoPreview.style.display = 'none';
-      status.textContent = '';
-      window._adImageBlob = null;
-      window._adVideoFile = null;
-      return;
-    }
-    if (file.type.startsWith('video/')) {
-      window._adVideoFile = file;
-      window._adImageBlob = null;
-      preview.style.display = 'none';
-      videoPreview.src = URL.createObjectURL(file);
-      videoPreview.style.display = 'block';
-      const sizeMB = (file.size / 1024 / 1024).toFixed(2);
-      status.innerHTML = `✅ <strong>Video original conservado</strong> — ${sizeMB} MB. Se subirá a Meta sin recomprimir para mantener la máxima calidad posible.`;
-      return;
-    }
-    window._adVideoFile = null;
-    videoPreview.style.display = 'none';
-    status.textContent = '⏳ Procesando imagen...';
-    compressImage(file, 1200, 628).then(blob => {
-      window._adImageBlob = blob;
-      preview.src = URL.createObjectURL(blob);
-      preview.style.display = 'block';
-      const origKB = (file.size / 1024).toFixed(1);
-      const finalKB = (blob.size / 1024).toFixed(1);
-      const action = blob === file ? 'Original conservada' : 'Optimizada para Meta';
-      status.innerHTML = `✅ <strong>${action}</strong> — ${origKB} KB → ${finalKB} KB. Se subirá al crear la campaña.`;
-    }).catch(err => {
-      status.textContent = `❌ Error: ${err.message}`;
-      preview.style.display = 'none';
-      window._adImageBlob = null;
-    });
-  }
-
 
   async function uploadImageToMeta(blob) {
     const formData = new FormData();
-    formData.append('file', blob, 'ad-image.jpg');
-    const url = `${API}/${ACCOUNT_ID}/adimages?access_token=${encodeURIComponent(TOKEN)}`;
-    console.log('[Meta UPLOAD]', url);
-    const res = await fetch(url, { method: 'POST', body: formData });
-    const data = await res.json();
-    if (data.error) {
-      console.error('[Meta ERROR full]', JSON.stringify(data.error, null, 2));
-      throw new Error(data.error.message);
+    formData.append('file', blob);
+    try {
+      const res = await fetch(`${API}/me/adimages?access_token=${TOKEN}`, {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      return data.images?.[Object.keys(data.images)[0]]?.hash || null;
+    } catch (e) {
+      console.error('Error uploading image:', e);
+      return null;
     }
-    const images = data.images || {};
-    const firstKey = Object.keys(images)[0];
-    return images[firstKey]?.hash || '';
   }
 
   async function uploadVideoToMeta(file) {
     const formData = new FormData();
-    formData.append('source', file, file.name || 'ad-video.mp4');
-    const url = `${API}/${ACCOUNT_ID}/advideos?access_token=${encodeURIComponent(TOKEN)}`;
-    console.log('[Meta VIDEO UPLOAD]', url);
-    const res = await fetch(url, { method: 'POST', body: formData });
-    const data = await res.json();
-    if (data.error) {
-      console.error('[Meta ERROR full]', JSON.stringify(data.error, null, 2));
-      throw new Error(data.error.message);
-    }
-    const videoId = data.id || '';
-    if (videoId) await waitForMetaVideo(videoId);
-    return videoId;
-  }
-
-  async function waitForMetaVideo(videoId) {
-    for (let i = 0; i < 10; i++) {
-      const r = await fetch(`${API}/${videoId}?fields=status&access_token=${encodeURIComponent(TOKEN)}`);
-      const d = await r.json();
-      if (d.error) throw new Error(d.error.message);
-      const status = d.status?.video_status || d.status?.processing_phase?.status || '';
-      if (String(status).toLowerCase().includes('ready') || String(status).toLowerCase().includes('complete')) return;
-      await new Promise(resolve => setTimeout(resolve, 3000));
+    formData.append('file', file);
+    try {
+      const res = await fetch(`${API}/${ACCOUNT_ID}/advideos?access_token=${TOKEN}`, {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      return data.video_id || data.id || null;
+    } catch (e) {
+      console.error('Error uploading video:', e);
+      return null;
     }
   }
 
-  /* ── Exponer funciones a window (necesario por ser módulo) ─────── */
-  window.goTo = goTo;
-  window.verifyToken = verifyToken;
-  window.saveCredentials = saveCredentials;
-  window.goToStep3 = goToStep3;
-  window.createCampaign = createCampaign;
-  window.resetAll = resetAll;
-  window.generateWithAI = generateWithAI;
-  window.countChars = countChars;
-  window.selectVariant = selectVariant;
-  window.applyAIBudget = applyAIBudget;
-  window.setCampaignMode = setCampaignMode;
-  window.generateAutoStrategy = generateAutoStrategy;
-  window.toggleSandboxMode = toggleSandboxMode;
-  window.toggleLaserBga = toggleLaserBga;
-  window.previewImage = previewImage;
+  function previewImage(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const isVideo = file.type.startsWith('video/');
+    const isImage = file.type.startsWith('image/');
+    if (isVideo) {
+      window._adVideoFile = file;
+      window._adImageBlob = null;
+      const videoUrl = URL.createObjectURL(file);
+      document.getElementById('adVideoPreview').src = videoUrl;
+      document.getElementById('adVideoPreview').style.display = 'block';
+      document.getElementById('adImagePreview').style.display = 'none';
+      document.getElementById('imageUploadStatus').textContent = '✅ Video listo para subir';
+    } else if (isImage) {
+      window._adImageBlob = file;
+      window._adVideoFile = null;
+      const imgUrl = URL.createObjectURL(file);
+      document.getElementById('adImagePreview').src = imgUrl;
+      document.getElementById('adImagePreview').style.display = 'block';
+      document.getElementById('adVideoPreview').style.display = 'none';
+      document.getElementById('imageUploadStatus').textContent = '✅ Imagen lista para subir';
+    } else {
+      alert_('alertStep3', 'err', 'Formato no soportado. Usa JPG, PNG, WebP, MP4 o MOV.');
+    }
+  }
 
-  /* ── Init ─────────────────────────────────────────── */
+  // Cargar credenciales al iniciar
   loadCredentials();
 </script>
 </body>
