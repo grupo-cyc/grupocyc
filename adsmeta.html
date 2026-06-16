@@ -398,16 +398,18 @@
 
         <div class="full">
           <div class="alert info">
-            📷 <strong>Imagen del anuncio:</strong> Sube una imagen desde tu computadora. Se comprimirá automáticamente para cumplir los requisitos de Meta.
+            📷🎬 <strong>Creativo del anuncio:</strong> Sube una imagen o video desde tu computadora. Las imágenes se optimizan si es necesario; los videos se conservan en calidad original.
           </div>
         </div>
 
-        <label class="full">Subir imagen <span style="font-weight:500;color:var(--muted)">(JPG/PNG, recomendado 1200×628 px)</span>
-          <input id="adImageFile" type="file" accept="image/jpeg,image/png,image/webp" onchange="previewImage(this)" />
+        <label class="full">Subir imagen o video <span style="font-weight:500;color:var(--muted)">(Imagen JPG/PNG/WebP o video MP4/MOV en máxima calidad posible)</span>
+          <input id="adImageFile" type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/x-m4v" onchange="previewImage(this)" />
         </label>
         <img id="adImagePreview" style="display:none; max-width:100%; width:500px; margin-top:12px; border-radius:14px; box-shadow: 0 10px 30px rgba(10,35,66,0.15); border:1.5px solid rgba(10,35,66,0.1);" />
+        <video id="adVideoPreview" controls style="display:none; max-width:100%; width:500px; margin-top:12px; border-radius:14px; box-shadow: 0 10px 30px rgba(10,35,66,0.15); border:1.5px solid rgba(10,35,66,0.1);"></video>
         <div id="imageUploadStatus" style="margin-top:6px; font-size:0.9rem; color:var(--muted);"></div>
         <input type="hidden" id="imageHash" />
+        <input type="hidden" id="videoId" />
 
       </div><!-- /fg -->
 
@@ -633,6 +635,7 @@
     const body    = document.getElementById('adBody').value.trim();
     const desc    = document.getElementById('adDesc').value.trim();
     let imgHash = document.getElementById('imageHash').value.trim();
+    let videoId = document.getElementById('videoId').value.trim();
     const abMode  = document.getElementById('abMode').checked;
     const variants = window._aiVariants || [];
     const interests = window._aiInterests || [];
@@ -648,7 +651,15 @@
     btn.textContent = 'Creando...';
 
     try {
-      /* 0. Subir imagen si se seleccionó localmente */
+      /* 0. Subir imagen/video si se seleccionó localmente */
+      if (window._adVideoFile && !videoId) {
+        alert_('alertStep3','info','⏳ Subiendo video a Meta en calidad original...');
+        videoId = await uploadVideoToMeta(window._adVideoFile);
+        if (!videoId) throw new Error('Meta no devolvió ID de video');
+        document.getElementById('videoId').value = videoId;
+        imgHash = '';
+        document.getElementById('imageHash').value = '';
+      }
       if (window._adImageBlob && !imgHash) {
         alert_('alertStep3','info','⏳ Subiendo imagen a Meta...');
         imgHash = await uploadImageToMeta(window._adImageBlob);
@@ -740,13 +751,15 @@
         alert_('alertStep3','info',`⏳ 3/4 — Creando ${variants.length} anuncios A/B...`);
         for (let i = 0; i < variants.length; i++) {
           const v = variants[i];
-          const linkData = { link: isFollowers ? pageUrl : url, message: v.texto || body, name: v.titulo || title, description: v.cta || desc };
-          if (imgHash) linkData.image_hash = imgHash;
-          if (isWhatsApp) linkData.call_to_action = whatsappCTA;
-          if (isFollowers) linkData.call_to_action = followCTA;
+          const creativeSpec = videoId
+            ? { page_id: pageId, video_data: { video_id: videoId, message: v.texto || body, title: v.titulo || title, call_to_action: isWhatsApp ? whatsappCTA : (isFollowers ? followCTA : { type: 'LEARN_MORE', value: { link: url } }) } }
+            : { page_id: pageId, link_data: { link: isFollowers ? pageUrl : url, message: v.texto || body, name: v.titulo || title, description: v.cta || desc } };
+          if (!videoId && imgHash) creativeSpec.link_data.image_hash = imgHash;
+          if (!videoId && isWhatsApp) creativeSpec.link_data.call_to_action = whatsappCTA;
+          if (!videoId && isFollowers) creativeSpec.link_data.call_to_action = followCTA;
           const cr = await post(`/${ACCOUNT_ID}/adcreatives`, {
             name: `${name} — Creative ${i+1} (${v.angulo || 'v'+ (i+1)})`,
-            object_story_spec: { page_id: pageId, link_data: linkData }
+            object_story_spec: creativeSpec
           });
           if (cr.error) throw new Error(`Creative ${i+1}: ${cr.error.message}`);
 
@@ -761,13 +774,15 @@
         }
       } else {
         alert_('alertStep3','info','⏳ 3/4 — Creando el anuncio...');
-        const linkData = { link: isFollowers ? pageUrl : url, message: body, name: title, description: desc };
-        if (imgHash) linkData.image_hash = imgHash;
-        if (isWhatsApp) linkData.call_to_action = whatsappCTA;
-        if (isFollowers) linkData.call_to_action = followCTA;
+        const creativeSpec = videoId
+          ? { page_id: pageId, video_data: { video_id: videoId, message: body, title, call_to_action: isWhatsApp ? whatsappCTA : (isFollowers ? followCTA : { type: 'LEARN_MORE', value: { link: url } }) } }
+          : { page_id: pageId, link_data: { link: isFollowers ? pageUrl : url, message: body, name: title, description: desc } };
+        if (!videoId && imgHash) creativeSpec.link_data.image_hash = imgHash;
+        if (!videoId && isWhatsApp) creativeSpec.link_data.call_to_action = whatsappCTA;
+        if (!videoId && isFollowers) creativeSpec.link_data.call_to_action = followCTA;
         const cr = await post(`/${ACCOUNT_ID}/adcreatives`, {
           name: `${name} — Creative`,
-          object_story_spec: { page_id: pageId, link_data: linkData }
+          object_story_spec: creativeSpec
         });
         if (cr.error) throw new Error(`Creative: ${cr.error.message}`);
 
@@ -1397,13 +1412,30 @@ Genera un anuncio de Facebook Ads. Responde EXCLUSIVAMENTE con este JSON (sin ma
   function previewImage(input) {
     const file = input.files[0];
     const preview = document.getElementById('adImagePreview');
+    const videoPreview = document.getElementById('adVideoPreview');
     const status = document.getElementById('imageUploadStatus');
+    document.getElementById('imageHash').value = '';
+    document.getElementById('videoId').value = '';
     if (!file) {
       preview.style.display = 'none';
+      videoPreview.style.display = 'none';
       status.textContent = '';
       window._adImageBlob = null;
+      window._adVideoFile = null;
       return;
     }
+    if (file.type.startsWith('video/')) {
+      window._adVideoFile = file;
+      window._adImageBlob = null;
+      preview.style.display = 'none';
+      videoPreview.src = URL.createObjectURL(file);
+      videoPreview.style.display = 'block';
+      const sizeMB = (file.size / 1024 / 1024).toFixed(2);
+      status.innerHTML = `✅ <strong>Video original conservado</strong> — ${sizeMB} MB. Se subirá a Meta sin recomprimir para mantener la máxima calidad posible.`;
+      return;
+    }
+    window._adVideoFile = null;
+    videoPreview.style.display = 'none';
     status.textContent = '⏳ Procesando imagen...';
     compressImage(file, 1200, 628).then(blob => {
       window._adImageBlob = blob;
@@ -1435,6 +1467,33 @@ Genera un anuncio de Facebook Ads. Responde EXCLUSIVAMENTE con este JSON (sin ma
     const images = data.images || {};
     const firstKey = Object.keys(images)[0];
     return images[firstKey]?.hash || '';
+  }
+
+  async function uploadVideoToMeta(file) {
+    const formData = new FormData();
+    formData.append('source', file, file.name || 'ad-video.mp4');
+    const url = `${API}/${ACCOUNT_ID}/advideos?access_token=${encodeURIComponent(TOKEN)}`;
+    console.log('[Meta VIDEO UPLOAD]', url);
+    const res = await fetch(url, { method: 'POST', body: formData });
+    const data = await res.json();
+    if (data.error) {
+      console.error('[Meta ERROR full]', JSON.stringify(data.error, null, 2));
+      throw new Error(data.error.message);
+    }
+    const videoId = data.id || '';
+    if (videoId) await waitForMetaVideo(videoId);
+    return videoId;
+  }
+
+  async function waitForMetaVideo(videoId) {
+    for (let i = 0; i < 10; i++) {
+      const r = await fetch(`${API}/${videoId}?fields=status&access_token=${encodeURIComponent(TOKEN)}`);
+      const d = await r.json();
+      if (d.error) throw new Error(d.error.message);
+      const status = d.status?.video_status || d.status?.processing_phase?.status || '';
+      if (String(status).toLowerCase().includes('ready') || String(status).toLowerCase().includes('complete')) return;
+      await new Promise(resolve => setTimeout(resolve, 3000));
+    }
   }
 
   /* ── Exponer funciones a window (necesario por ser módulo) ─────── */
