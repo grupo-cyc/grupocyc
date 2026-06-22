@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
@@ -69,6 +69,21 @@
     .btn-danger { background: rgba(214,40,40,.1); color: var(--danger); border: 1px solid rgba(214,40,40,.22); border-radius: 999px; padding: 8px 14px; font: inherit; font-weight: 800; cursor: pointer; white-space: nowrap; font-size: .85rem; transition: background .2s ease; }
     .btn-danger:hover { background: var(--danger); color: #fff; }
     .no-reviews-admin { text-align: center; padding: 32px; color: var(--muted); }
+    .alianza-panel { margin-top: 28px; }
+    .alianza-panel h2 { color: var(--navy); margin: 0 0 6px; }
+    .alianza-panel > p { color: var(--muted); margin: 0 0 22px; }
+    .alianza-form { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)) auto; gap: 14px; align-items: end; }
+    .alianza-form label { display: grid; gap: 6px; color: var(--navy); font-weight: 700; font-size: .92rem; }
+    .alianza-form input, .alianza-form select { width: 100%; border: 1px solid #D9E2EC; border-radius: 14px; padding: 12px 14px; font: inherit; color: var(--text); background: #fff; outline: none; }
+    .alianza-form input:focus, .alianza-form select:focus { border-color: var(--cyan); box-shadow: 0 0 0 4px rgba(0,180,216,.12); }
+    .alianza-form button { height: 45px; border-radius: 999px; border: 0; font: inherit; font-weight: 800; cursor: pointer; transition: transform .2s ease; }
+    .alianza-form button:hover { transform: translateY(-2px); }
+    .alianza-table { width: 100%; border-collapse: collapse; font-size: .9rem; margin-top: 18px; }
+    .alianza-table th { text-align: left; padding: 12px 14px; color: var(--navy); font-weight: 800; border-bottom: 2px solid #E3EEF7; background: #F4F7F9; }
+    .alianza-table td { padding: 12px 14px; border-bottom: 1px solid #EEF3F8; color: var(--text); vertical-align: middle; }
+    .alianza-table tr:last-child td { border-bottom: none; }
+    .alianza-table tr:hover td { background: #F8FBFE; }
+    .alianza-actions { display: flex; gap: 8px; flex-wrap: wrap; }
     .img-uploader { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
     .img-upload-box { border: 2px dashed #C8D9EA; border-radius: 22px; padding: 24px; text-align: center; transition: border-color .2s ease, background .2s ease; position: relative; }
     .img-upload-box:hover { border-color: var(--cyan); background: rgba(0,180,216,.04); }
@@ -83,7 +98,7 @@
     .img-status { margin-top: 8px; font-size: .85rem; font-weight: 700; min-height: 20px; }
     .img-status.ok { color: #2F7D32; } .img-status.error { color: var(--danger); }
     @media (max-width: 700px) { .img-uploader { grid-template-columns: 1fr; } }
-    @media (max-width: 980px) { .layout { grid-template-columns: 1fr; } .sidebar { position: relative; height: auto; } .grid, .form-grid { grid-template-columns: 1fr; } .topbar, .actions { align-items: stretch; flex-direction: column; } .btn { width: 100%; } }
+    @media (max-width: 980px) { .layout { grid-template-columns: 1fr; } .sidebar { position: relative; height: auto; } .grid, .form-grid, .alianza-form { grid-template-columns: 1fr; } .alianza-form > div { justify-content: stretch; } .alianza-form button { width: 100%; } .topbar, .actions { align-items: stretch; flex-direction: column; } .btn { width: 100%; } }
     .analytics-strip { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 18px; margin-bottom: 28px; }
     .stat-card { border-radius: 22px; padding: 22px 20px; color: var(--white); display: flex; flex-direction: column; gap: 10px; position: relative; overflow: hidden; box-shadow: var(--shadow); }
     .stat-card::after { content: ''; position: absolute; width: 100px; height: 100px; border-radius: 50%; background: rgba(255,255,255,.1); right: -30px; bottom: -40px; }
@@ -116,9 +131,10 @@
       <div class="brand"><span class="brand-mark">C&C</span><span>Grupo Consultor C&C</span></div>
       <nav class="menu" aria-label="Panel de administración">
         <span class="active">Configuración de Nómina</span>
+        <a href="#alianzaPanel" onclick="event.preventDefault(); document.getElementById('alianzaPanel').scrollIntoView({behavior:'smooth'})">Gestión de Alianzas</a>
         <a href="cyc.html" target="_blank" rel="noopener">Ver calculadora pública</a>
       </nav>
-      <div class="sidebar-note">Actualiza las variables que consume la calculadora pública. Los cambios se guardan en Firebase Firestore en <strong>settings/payroll</strong>.</div>
+      <div class="sidebar-note">Actualiza las variables que consume la calculadora pública. Los cambios se guardan en Firebase Firestore en <strong>settings/payroll</strong>. Gestiona afiliados de alianzas en la sección inferior.</div>
     </aside>
 
     <main class="main">
@@ -309,6 +325,43 @@
         <h2>Reseñas de clientes</h2>
         <p>Opiniones enviadas desde la página pública. Puedes eliminar las que consideres inadecuadas.</p>
         <div class="reviews-list-admin" id="reviewsAdmin"><div class="no-reviews-admin">Cargando reseñas...</div></div>
+      </section>
+
+      <section class="card alianza-panel" id="alianzaPanel">
+        <h2>Gestión de Alianzas</h2>
+        <p>Agrega, edita o elimina cédulas de clientes que pertenecen a la red de alianzas. Estos datos se consultan públicamente desde <a href="alianza.html" target="_blank" rel="noopener">alianza.html</a>.</p>
+
+        <form class="alianza-form" id="alianzaForm" onsubmit="event.preventDefault();">
+          <label>Cédula
+            <input id="alianzaCedula" type="text" placeholder="Número de cédula" required />
+          </label>
+          <label>Nombre completo
+            <input id="alianzaNombre" type="text" placeholder="Nombre del afiliado" required />
+          </label>
+          <label>Estado
+            <select id="alianzaEstado">
+              <option value="activo">Activo</option>
+              <option value="inactivo">Inactivo</option>
+            </select>
+          </label>
+          <div style="display:flex;gap:8px;align-items:flex-end;">
+            <button type="button" class="btn-green" onclick="saveAlianza()">Guardar</button>
+            <button type="button" class="btn-small" onclick="clearAlianzaForm()">Limpiar</button>
+          </div>
+        </form>
+
+        <div id="alianzaStatus" class="status" style="margin-top:12px;"></div>
+
+        <div style="overflow-x:auto;">
+          <table class="alianza-table">
+            <thead>
+              <tr><th>Cédula</th><th>Nombre</th><th>Estado</th><th>Acciones</th></tr>
+            </thead>
+            <tbody id="alianzaBody">
+              <tr><td colspan="4" style="color:var(--muted);text-align:center;">Cargando afiliados...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </section>
     </main>
   </div>
@@ -590,6 +643,9 @@
       }
     };
 
+    window.saveAlianza = saveAlianza;
+    window.clearAlianzaForm = clearAlianzaForm;
+
     window.deleteReview = async (id) => {
       if (!confirm('¿Eliminar esta reseña?')) return;
       try {
@@ -602,6 +658,103 @@
     };
 
     loadAdminReviews();
+
+    // ── GESTIÓN DE ALIANZAS ─────────────────────────────────────────────
+    let editingAlianzaCedula = null;
+
+    function setAlianzaStatus(message, type = '') {
+      const el = $('alianzaStatus');
+      el.textContent = message;
+      el.className = 'status ' + type;
+    }
+
+    function clearAlianzaForm() {
+      $('alianzaCedula').value = '';
+      $('alianzaNombre').value = '';
+      $('alianzaEstado').value = 'activo';
+      editingAlianzaCedula = null;
+      $('alianzaCedula').disabled = false;
+      setAlianzaStatus('');
+    }
+
+    async function saveAlianza() {
+      const cedula = $('alianzaCedula').value.trim();
+      const nombre = $('alianzaNombre').value.trim();
+      const estado = $('alianzaEstado').value;
+      if (!cedula || !nombre) {
+        setAlianzaStatus('Completa cédula y nombre.', 'error');
+        return;
+      }
+      setAlianzaStatus('Guardando...');
+      try {
+        await setDoc(doc(db, 'alianza', cedula), {
+          nombre,
+          estado,
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+        setAlianzaStatus('Afiliado guardado correctamente.', 'ok');
+        clearAlianzaForm();
+        await loadAlianzaList();
+      } catch (error) {
+        console.error('Error guardando alianza:', error);
+        setAlianzaStatus('Error al guardar. Revisa permisos de Firestore.', 'error');
+      }
+    }
+
+    window.editAlianza = (cedula, nombre, estado) => {
+      $('alianzaCedula').value = cedula;
+      $('alianzaNombre').value = nombre;
+      $('alianzaEstado').value = estado;
+      $('alianzaCedula').disabled = true;
+      editingAlianzaCedula = cedula;
+      $('alianzaCedula').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setAlianzaStatus('Editando afiliado. Modifica los datos y presiona Guardar.');
+    };
+
+    window.deleteAlianza = async (cedula) => {
+      if (!confirm(`¿Eliminar la cédula ${cedula} de la lista de alianzas?`)) return;
+      try {
+        await deleteDoc(doc(db, 'alianza', cedula));
+        if (editingAlianzaCedula === cedula) clearAlianzaForm();
+        await loadAlianzaList();
+      } catch (error) {
+        console.error('Error eliminando alianza:', error);
+        alert('No fue posible eliminar. Revisa permisos de Firestore.');
+      }
+    };
+
+    async function loadAlianzaList() {
+      const tbody = $('alianzaBody');
+      try {
+        const q = query(collection(db, 'alianza'), orderBy('nombre', 'asc'));
+        const snap = await getDocs(q);
+        if (snap.empty) {
+          tbody.innerHTML = '<tr><td colspan="4" style="color:var(--muted);text-align:center;">No hay afiliados registrados todavía.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = snap.docs.map(d => {
+          const a = d.data();
+          const cedula = d.id;
+          const isActive = a.estado === 'activo';
+          return `<tr>
+            <td><strong>${cedula}</strong></td>
+            <td>${a.nombre || '—'}</td>
+            <td><span style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;font-weight:700;font-size:.82rem;background:${isActive ? 'rgba(22,163,74,.12)' : 'rgba(214,40,40,.12)'};color:${isActive ? '#16A34A' : '#DC2626'};">${isActive ? '● Activo' : '● Inactivo'}</span></td>
+            <td>
+              <div class="alianza-actions">
+                <button class="btn-small" onclick="editAlianza('${cedula}', '${(a.nombre || '').replace(/'/g, '\\\'')}', '${a.estado || 'activo'}')">Editar</button>
+                <button class="btn-danger" onclick="deleteAlianza('${cedula}')">Eliminar</button>
+              </div>
+            </td>
+          </tr>`;
+        }).join('');
+      } catch (error) {
+        console.error('Error cargando alianzas:', error);
+        tbody.innerHTML = '<tr><td colspan="4" style="color:var(--muted);text-align:center;">No se pudo cargar la lista. Revisa permisos de Firestore.</td></tr>';
+      }
+    }
+
+    loadAlianzaList();
 
     // ── ANALÍTICA ───────────────────────────────────────────────────────
     function fmt(n) { return (n || 0).toLocaleString('es-CO'); }
