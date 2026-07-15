@@ -940,16 +940,32 @@
         function generarPDF() {
             const elemento = document.getElementById('documento-pdf');
             const num = document.getElementById('numCuentaCobro').value || 'S_N';
+
+            const anchoOriginal = elemento.style.width;
+            elemento.style.width = '215.9mm';
+
             const opciones = {
                 margin: 0,
                 filename: `Cuenta_Cobro_${num}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                    windowWidth: 1400,
+                    onclone: (doc) => {
+                        const el = doc.getElementById('documento-pdf');
+                        el.style.width = '215.9mm';
+                        el.style.minHeight = '279.4mm';
+                        el.style.padding = '22mm 24mm';
+                        el.style.borderRadius = '0';
+                    }
+                },
                 jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
             };
             const inputs = document.querySelectorAll('.input-ghost');
             inputs.forEach(i => i.style.border = 'none');
             html2pdf().set(opciones).from(elemento).save().then(() => {
+                elemento.style.width = anchoOriginal;
                 inputs.forEach(i => i.style.border = '');
             });
         }
