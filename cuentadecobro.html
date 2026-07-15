@@ -4,26 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador de Cuentas de Cobro</title>
-    <!-- Tailwind CSS para el diseño minimalista y colores azul cielo -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome para el ícono de la tuerca -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- html2pdf para exportar directamente a PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-        
+
+        * { box-sizing: border-box; }
+
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0f9ff; /* Azul cielo muy claro */
+            background-color: #f0f9ff;
             color: #1e293b;
         }
 
-        /* Estilos del documento Carta */
         #documento-pdf {
-            width: 215.9mm; /* Ancho carta */
-            min-height: 279.4mm; /* Alto carta */
+            width: 215.9mm;
+            min-height: 279.4mm;
             background-color: white;
             margin: 0 auto;
             padding: 20mm;
@@ -43,19 +41,20 @@
         }
 
         .input-ghost:focus, .input-ghost:hover {
-            border-bottom: 1px dashed #38bdf8; /* Azul cielo */
+            border-bottom: 1px dashed #38bdf8;
             background-color: #f0f9ff;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
+        select.input-ghost {
+            appearance: auto;
+            padding-right: 24px;
         }
 
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+
         th {
-            background-color: #e0f2fe; /* Cabecera azul cielo */
-            color: #0369a1; /* Texto azul oscuro */
+            background-color: #e0f2fe;
+            color: #0369a1;
             font-weight: 600;
             text-align: left;
             padding: 10px;
@@ -68,52 +67,66 @@
             vertical-align: top;
         }
 
-        /* Ocultar botones al imprimir o generar PDF */
         @media print {
             .no-print { display: none !important; }
             #documento-pdf { box-shadow: none; margin: 0; padding: 0; }
             body { background-color: white; }
         }
 
-        /* Estilos del Modal (Tuerca) */
         dialog {
             border: none;
             border-radius: 12px;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             padding: 0;
             width: 100%;
-            max-width: 500px;
+            max-width: 800px;
+            max-height: 90vh;
         }
         dialog::backdrop {
             background: rgba(15, 23, 42, 0.5);
             backdrop-filter: blur(4px);
         }
+
+        .tab-btn.active {
+            border-bottom: 2px solid #0ea5e9;
+            color: #0284c7;
+            font-weight: 600;
+        }
+
+        .lista-items { max-height: 220px; overflow-y: auto; }
+        .item-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            background: #f8fafc;
+        }
+        .item-card:hover { background: #e0f2fe; }
     </style>
 </head>
 <body class="p-6">
 
-    <!-- Panel de control flotante -->
     <div class="no-print fixed top-6 right-6 flex gap-4 z-50">
         <button onclick="document.getElementById('configModal').showModal()" class="bg-white text-sky-600 hover:bg-sky-50 px-4 py-2 rounded-lg shadow border border-sky-200 transition">
             <i class="fas fa-cog mr-2"></i>Configuración
         </button>
+        <button onclick="guardarCuentaCobro()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg shadow transition">
+            <i class="fas fa-cloud-upload-alt mr-2"></i>Guardar y avanzar
+        </button>
         <button onclick="generarPDF()" class="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg shadow transition">
             <i class="fas fa-file-pdf mr-2"></i>Imprimir PDF
         </button>
-        <button onclick="guardarDatosEnFirebase()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg shadow transition">
-            <i class="fas fa-cloud-upload-alt mr-2"></i>Guardar
-        </button>
     </div>
 
-    <!-- Contenedor principal del Documento (Vista Previa) -->
     <div id="documento-pdf">
-        
-        <!-- Encabezado -->
         <div class="flex justify-between items-start mb-8">
             <div class="text-sm leading-relaxed text-gray-700">
-                <p class="font-bold text-gray-900">ANDERSON DAMIAN CASTRO BAYONA</p>
+                <p class="font-bold text-gray-900">GRUPO CONSULTOR C&amp;C</p>
                 <p>CALLE 68B  23AB-38 T4 APTO 102 MONTEBIANCO</p>
-                <p>3203706164</p>
+                <p>3154967667</p>
                 <p>GIRON - SANTANDER</p>
             </div>
             <div class="text-right">
@@ -122,7 +135,6 @@
             </div>
         </div>
 
-        <!-- Tabla 1: Dirigido a / Debe / Cuenta de cobro -->
         <table>
             <thead>
                 <tr>
@@ -134,13 +146,16 @@
             <tbody>
                 <tr>
                     <td>
+                        <select id="selectCliente" class="input-ghost font-bold mb-1 no-print" onchange="cargarClienteSeleccionado()">
+                            <option value="">-- Seleccionar cliente --</option>
+                        </select>
                         <input type="text" id="dirigidoNombre" class="input-ghost font-bold mb-1" placeholder="Nombre completo">
-                        <input type="text" id="dirigidoDoc" class="input-ghost mb-1" placeholder="Documento (Ej: 1098640640)">
+                        <input type="text" id="dirigidoDoc" class="input-ghost mb-1" placeholder="Documento">
                         <input type="text" id="dirigidoDir" class="input-ghost mb-1" placeholder="Dirección">
-                        <input type="text" id="dirigidoTel" class="input-ghost" placeholder="Teléfono / Celular">
+                        <input type="text" id="dirigidoTel" class="input-ghost" placeholder="Número / Celular">
                     </td>
                     <td class="align-middle text-center">
-                        <input type="text" id="montoDebe" class="input-ghost text-2xl font-bold text-center text-sky-900" placeholder="$ 0" oninput="formatearMoneda(this)">
+                        <input type="text" id="montoDebe" class="input-ghost text-2xl font-bold text-center text-sky-900" placeholder="$ 0" oninput="formatearMoneda(this); actualizarTotalFinal()">
                     </td>
                     <td class="align-middle text-center">
                         <input type="text" id="numCuentaCobro" class="input-ghost text-2xl font-bold text-center text-gray-800" placeholder="000" readonly>
@@ -149,7 +164,6 @@
             </tbody>
         </table>
 
-        <!-- Tabla 2: Conceptos -->
         <table>
             <thead>
                 <tr>
@@ -162,10 +176,13 @@
             <tbody>
                 <tr>
                     <td>
-                        <textarea id="conceptoDesc" class="input-ghost w-full resize-none" rows="3" placeholder="Ej: CREACION Y REGISTRO DE EMPRESA A LOS SUBSISTEMAS DE SEGURIDA SOCIAL..."></textarea>
+                        <select id="selectConcepto" class="input-ghost font-bold mb-1 no-print w-full" onchange="cargarConceptoSeleccionado()">
+                            <option value="">-- Seleccionar concepto guardado --</option>
+                        </select>
+                        <textarea id="conceptoDesc" class="input-ghost w-full resize-none" rows="3" placeholder="Descripción del servicio..."></textarea>
                     </td>
                     <td class="text-center align-middle">
-                        <input type="number" id="conceptoCant" class="input-ghost text-center" value="1" oninput="calcularTotal()">
+                        <input type="number" id="conceptoCant" class="input-ghost text-center" value="1" min="1" oninput="calcularTotal()">
                     </td>
                     <td class="text-right align-middle">
                         <input type="text" id="conceptoPrecio" class="input-ghost text-right" placeholder="$ 0" oninput="formatearMoneda(this); calcularTotal()">
@@ -177,13 +194,12 @@
             </tbody>
         </table>
 
-        <!-- Notas y Banco -->
         <div class="mt-12 bg-sky-50 border border-sky-100 p-4 rounded-lg">
             <h3 class="font-bold text-sky-800 mb-2">Notas:</h3>
             <p class="text-sm font-semibold mb-2">CUENTAS BANCARIAS PARA PAGO POR TRANSFERENCIA</p>
             <div class="flex gap-4 items-center mb-2">
                 <select id="selectBancos" class="input-ghost font-bold text-sky-900 w-auto bg-transparent border-b border-sky-300">
-                    <!-- Las opciones se cargan desde Firebase o Array por defecto -->
+                    <option value="">-- Banco --</option>
                 </select>
                 <input type="text" id="bancoCuenta" class="input-ghost font-bold flex-1" placeholder="Número de cuenta">
             </div>
@@ -195,37 +211,77 @@
         </div>
     </div>
 
-    <!-- Modal de Configuración -->
     <dialog id="configModal">
-        <div class="bg-white p-6 rounded-lg">
-            <div class="flex justify-between items-center border-b pb-3 mb-4">
+        <div class="bg-white rounded-lg overflow-hidden flex flex-col" style="max-height: 90vh;">
+            <div class="flex justify-between items-center border-b px-6 py-4 bg-sky-50">
                 <h2 class="text-xl font-bold text-sky-900">Configuración (Firebase)</h2>
                 <button onclick="document.getElementById('configModal').close()" class="text-gray-400 hover:text-red-500"><i class="fas fa-times"></i></button>
             </div>
-            
-            <div class="mb-4">
-                <label class="block text-sm font-bold text-gray-700 mb-2">Agregar nuevo Banco a la lista</label>
-                <div class="flex gap-2">
-                    <input type="text" id="nuevoBancoInput" class="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-sky-500" placeholder="Ej: Scotiabank Colpatria">
-                    <button onclick="agregarBanco()" class="bg-sky-500 text-white px-4 rounded hover:bg-sky-600"><i class="fas fa-plus"></i></button>
+
+            <div class="flex border-b">
+                <button class="tab-btn active flex-1 py-3 text-sm text-gray-600 hover:bg-sky-50" data-tab="tabClientes" onclick="mostrarTab('tabClientes')">Clientes</button>
+                <button class="tab-btn flex-1 py-3 text-sm text-gray-600 hover:bg-sky-50" data-tab="tabConceptos" onclick="mostrarTab('tabConceptos')">Conceptos</button>
+                <button class="tab-btn flex-1 py-3 text-sm text-gray-600 hover:bg-sky-50" data-tab="tabBancos" onclick="mostrarTab('tabBancos')">Bancos / Cuenta</button>
+            </div>
+
+            <div class="p-6 overflow-y-auto" style="max-height: 60vh;">
+                <!-- Clientes -->
+                <div id="tabClientes" class="tab-content">
+                    <h3 class="font-bold text-sky-800 mb-3">Agregar cliente</h3>
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <input type="text" id="cfgCliNombre" class="border rounded px-3 py-2 w-full" placeholder="Nombre completo">
+                        <input type="text" id="cfgCliDoc" class="border rounded px-3 py-2 w-full" placeholder="Documento">
+                        <input type="text" id="cfgCliDir" class="border rounded px-3 py-2 w-full col-span-2" placeholder="Dirección">
+                        <input type="text" id="cfgCliTel" class="border rounded px-3 py-2 w-full" placeholder="Número / Celular">
+                        <button onclick="agregarCliente()" class="bg-sky-500 text-white px-4 py-2 rounded hover:bg-sky-600"><i class="fas fa-plus mr-2"></i>Agregar</button>
+                    </div>
+                    <h4 class="font-semibold text-gray-700 mb-2">Clientes guardados</h4>
+                    <div id="listaClientes" class="lista-items"></div>
+                </div>
+
+                <!-- Conceptos -->
+                <div id="tabConceptos" class="tab-content hidden">
+                    <h3 class="font-bold text-sky-800 mb-3">Agregar concepto</h3>
+                    <div class="flex gap-2 mb-4">
+                        <textarea id="cfgConceptoDesc" class="border rounded px-3 py-2 w-full resize-none" rows="2" placeholder="Descripción del concepto"></textarea>
+                        <button onclick="agregarConcepto()" class="bg-sky-500 text-white px-4 py-2 rounded hover:bg-sky-600"><i class="fas fa-plus"></i></button>
+                    </div>
+                    <h4 class="font-semibold text-gray-700 mb-2">Conceptos guardados</h4>
+                    <div id="listaConceptos" class="lista-items"></div>
+                </div>
+
+                <!-- Bancos / Cuenta -->
+                <div id="tabBancos" class="tab-content hidden">
+                    <h3 class="font-bold text-sky-800 mb-3">Cuenta bancaria por defecto</h3>
+                    <div class="grid grid-cols-1 gap-3 mb-6">
+                        <select id="cfgCuentaBanco" class="border rounded px-3 py-2 w-full">
+                            <option value="">-- Seleccionar banco --</option>
+                        </select>
+                        <input type="text" id="cfgCuentaNumero" class="border rounded px-3 py-2 w-full" placeholder="Número de cuenta">
+                        <input type="text" id="cfgCuentaTitular" class="border rounded px-3 py-2 w-full" placeholder="Nombre del titular">
+                        <button onclick="guardarCuentaBancariaDefecto()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"><i class="fas fa-save mr-2"></i>Guardar cuenta por defecto</button>
+                    </div>
+
+                    <h3 class="font-bold text-sky-800 mb-3">Agregar nuevo banco</h3>
+                    <div class="flex gap-2 mb-4">
+                        <input type="text" id="nuevoBancoInput" class="border rounded px-3 py-2 w-full" placeholder="Ej: Scotiabank Colpatria">
+                        <button onclick="agregarBanco()" class="bg-sky-500 text-white px-4 rounded hover:bg-sky-600"><i class="fas fa-plus"></i></button>
+                    </div>
+                    <h4 class="font-semibold text-gray-700 mb-2">Bancos disponibles</h4>
+                    <div id="listaBancos" class="lista-items"></div>
                 </div>
             </div>
 
-            <div class="mb-4">
-                <label class="block text-sm font-bold text-gray-700 mb-2">Generar Nuevo Consecutivo</label>
-                <button onclick="generarNuevoConsecutivo()" class="w-full bg-slate-800 text-white px-4 py-2 rounded hover:bg-slate-900 transition">
-                    Asignar nuevo N.º de Cuenta
-                </button>
-                <p class="text-xs text-gray-500 mt-1">El número actual se leerá de la base de datos.</p>
+            <div class="border-t px-6 py-4 bg-gray-50 text-right">
+                <button onclick="document.getElementById('configModal').close()" class="bg-slate-700 text-white px-5 py-2 rounded hover:bg-slate-800">Cerrar</button>
             </div>
         </div>
     </dialog>
 
-    <!-- FIREBASE SDK V10 (Módulos) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-analytics.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCpVmdDTosviTAEnng2zYqzIqQMCurIG8c",
@@ -241,47 +297,59 @@
         const analytics = getAnalytics(app);
         const db = getFirestore(app);
 
-        // Referencias a la colección "settings" que tiene permiso de lectura/escritura público
         const bancosDocRef = doc(db, "settings", "bancos_config");
         const consecutivoDocRef = doc(db, "settings", "consecutivo_config");
+        const cuentaBancariaDocRef = doc(db, "settings", "cuenta_bancaria_default");
+        const clientesColRef = collection(db, "settings", "clientes", "lista");
+        const conceptosColRef = collection(db, "settings", "conceptos", "lista");
 
-        // Bancos por defecto de Colombia
         let listaBancos = [
-            "Bancolombia", "Nequi", "Daviplata", "Davivienda", 
-            "Banco de Bogotá", "Banco de Occidente", "BBVA Colombia", "Caja Social"
+            "Bancolombia", "Banco de Bogotá", "Banco de Occidente", "Banco Popular",
+            "Banco AV Villas", "Banco Caja Social", "Banco Cooperativo Coopcentral", "Banco GNB Sudameris",
+            "Banco Itaú", "Banco Mundo Mujer", "Banco Pichincha", "Banco Procredit",
+            "Banco Santander", "Banco Serfinanza", "Banco W", "BBVA Colombia",
+            "Citibank Colombia", "Davivienda", "Deutsche Bank", "Finandina",
+            "Garantías Financieras - GFBanco", "Global Bank", "HSBC Colombia", "Itaú Corpbanca",
+            "J.P. Morgan", "Lloyds Bank", "Mi Banco", "Nequi",
+            "RappiPay", "Scotiabank Colpatria", "Skandia", "Lulo Bank",
+            "Daviplata", "Movii", "Aval Pay", "PayPal"
         ];
 
-        // Cargar fecha actual (Zona horaria Bogotá)
+        function idUnico() {
+            return Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
+        }
+
         function cargarFecha() {
             const opciones = { timeZone: 'America/Bogota', year: 'numeric', month: '2-digit', day: '2-digit' };
             const fechaBogota = new Date().toLocaleDateString('es-CO', opciones);
             document.getElementById('fechaActual').innerText = fechaBogota;
         }
 
-        // Cargar Bancos desde Firebase
         async function cargarBancos() {
             const select = document.getElementById('selectBancos');
-            select.innerHTML = "";
+            const cfgSelect = document.getElementById('cfgCuentaBanco');
+            select.innerHTML = '<option value="">-- Banco --</option>';
+            cfgSelect.innerHTML = '<option value="">-- Seleccionar banco --</option>';
             try {
                 const docSnap = await getDoc(bancosDocRef);
                 if (docSnap.exists()) {
-                    listaBancos = docSnap.data().lista || listaBancos;
+                    const data = docSnap.data();
+                    listaBancos = data.lista || listaBancos;
                 } else {
                     await setDoc(bancosDocRef, { lista: listaBancos });
                 }
-                
-                listaBancos.forEach(banco => {
-                    const opt = document.createElement('option');
-                    opt.value = banco;
-                    opt.innerText = banco;
-                    select.appendChild(opt);
-                });
             } catch (error) {
                 console.error("Error cargando bancos:", error);
             }
+            listaBancos.forEach(banco => {
+                const opt = document.createElement('option'); opt.value = banco; opt.innerText = banco;
+                select.appendChild(opt);
+                const opt2 = opt.cloneNode(true);
+                cfgSelect.appendChild(opt2);
+            });
+            renderizarListaBancos();
         }
 
-        // Cargar consecutivo actual
         async function cargarConsecutivo() {
             try {
                 const docSnap = await getDoc(consecutivoDocRef);
@@ -296,39 +364,176 @@
             }
         }
 
-        // Generar nuevo consecutivo (+1)
+        async function avanzarConsecutivo() {
+            await updateDoc(consecutivoDocRef, { actual: increment(1) });
+            await cargarConsecutivo();
+        }
+
         window.generarNuevoConsecutivo = async function() {
-            try {
-                await updateDoc(consecutivoDocRef, { actual: increment(1) });
-                await cargarConsecutivo();
-                alert("Nuevo consecutivo asignado.");
-            } catch (error) {
-                console.error("Error al generar consecutivo:", error);
+            if(confirm("¿Generar un nuevo número de cuenta de cobro?")) {
+                await avanzarConsecutivo();
             }
         }
 
-        // Agregar nuevo banco a Firebase
         window.agregarBanco = async function() {
             const input = document.getElementById('nuevoBancoInput');
             const nuevoBanco = input.value.trim();
-            if(nuevoBanco !== "") {
+            if (nuevoBanco !== "" && !listaBancos.includes(nuevoBanco)) {
                 listaBancos.push(nuevoBanco);
+                listaBancos.sort((a, b) => a.localeCompare(b));
                 try {
                     await setDoc(bancosDocRef, { lista: listaBancos });
                     input.value = "";
-                    cargarBancos();
-                    alert("Banco agregado correctamente.");
-                } catch (error) {
-                    console.error("Error al guardar el banco:", error);
-                }
+                    await cargarBancos();
+                    alert("Banco agregado.");
+                } catch (error) { console.error(error); alert("Error al guardar banco."); }
+            } else if (listaBancos.includes(nuevoBanco)) {
+                alert("El banco ya existe.");
             }
         }
 
-        // Guardar factura en Firebase (en la ruta settings para asegurar que las reglas lo permitan)
-        window.guardarDatosEnFirebase = async function() {
+        function renderizarListaBancos() {
+            const contenedor = document.getElementById('listaBancos');
+            contenedor.innerHTML = "";
+            listaBancos.forEach((banco, index) => {
+                const div = document.createElement('div'); div.className = 'item-card';
+                div.innerHTML = `<span class="text-sm">${banco}</span>`;
+                contenedor.appendChild(div);
+            });
+        }
+
+        async function cargarClientes() {
+            const select = document.getElementById('selectCliente');
+            select.innerHTML = '<option value="">-- Seleccionar cliente --</option>';
+            try {
+                const snap = await getDocs(clientesColRef);
+                snap.forEach(d => {
+                    const c = d.data();
+                    const opt = document.createElement('option');
+                    opt.value = d.id;
+                    opt.innerText = c.nombre || 'Sin nombre';
+                    opt.dataset.nombre = c.nombre || '';
+                    opt.dataset.documento = c.documento || '';
+                    opt.dataset.direccion = c.direccion || '';
+                    opt.dataset.telefono = c.telefono || '';
+                    select.appendChild(opt);
+                });
+            } catch (error) { console.error("Error cargando clientes:", error); }
+            renderizarListaClientes();
+        }
+
+        window.cargarClienteSeleccionado = function() {
+            const select = document.getElementById('selectCliente');
+            const opt = select.options[select.selectedIndex];
+            if (!opt.value) return;
+            document.getElementById('dirigidoNombre').value = opt.dataset.nombre || '';
+            document.getElementById('dirigidoDoc').value = opt.dataset.documento || '';
+            document.getElementById('dirigidoDir').value = opt.dataset.direccion || '';
+            document.getElementById('dirigidoTel').value = opt.dataset.telefono || '';
+        }
+
+        window.agregarCliente = async function() {
+            const nombre = document.getElementById('cfgCliNombre').value.trim();
+            const documento = document.getElementById('cfgCliDoc').value.trim();
+            const direccion = document.getElementById('cfgCliDir').value.trim();
+            const telefono = document.getElementById('cfgCliTel').value.trim();
+            if (!nombre) { alert("El nombre es obligatorio."); return; }
+            try {
+                await addDoc(clientesColRef, { nombre, documento, direccion, telefono });
+                document.getElementById('cfgCliNombre').value = "";
+                document.getElementById('cfgCliDoc').value = "";
+                document.getElementById('cfgCliDir').value = "";
+                document.getElementById('cfgCliTel').value = "";
+                await cargarClientes();
+                alert("Cliente guardado.");
+            } catch (error) { console.error(error); alert("Error al guardar cliente."); }
+        }
+
+        function renderizarListaClientes() {
+            const contenedor = document.getElementById('listaClientes');
+            contenedor.innerHTML = "";
+            const select = document.getElementById('selectCliente');
+            Array.from(select.options).slice(1).forEach(opt => {
+                const div = document.createElement('div'); div.className = 'item-card';
+                div.innerHTML = `<div class="text-sm"><strong>${opt.dataset.nombre}</strong><br><span class="text-gray-500 text-xs">${opt.dataset.documento}</span></div>`;
+                contenedor.appendChild(div);
+            });
+        }
+
+        async function cargarConceptos() {
+            const select = document.getElementById('selectConcepto');
+            select.innerHTML = '<option value="">-- Seleccionar concepto guardado --</option>';
+            try {
+                const snap = await getDocs(conceptosColRef);
+                snap.forEach(d => {
+                    const c = d.data();
+                    const opt = document.createElement('option');
+                    opt.value = d.id;
+                    opt.innerText = (c.descripcion || 'Sin descripción').substring(0, 60) + '...';
+                    opt.dataset.descripcion = c.descripcion || '';
+                    select.appendChild(opt);
+                });
+            } catch (error) { console.error("Error cargando conceptos:", error); }
+            renderizarListaConceptos();
+        }
+
+        window.cargarConceptoSeleccionado = function() {
+            const select = document.getElementById('selectConcepto');
+            const opt = select.options[select.selectedIndex];
+            if (!opt.value) return;
+            document.getElementById('conceptoDesc').value = opt.dataset.descripcion || '';
+        }
+
+        window.agregarConcepto = async function() {
+            const descripcion = document.getElementById('cfgConceptoDesc').value.trim();
+            if (!descripcion) { alert("La descripción es obligatoria."); return; }
+            try {
+                await addDoc(conceptosColRef, { descripcion });
+                document.getElementById('cfgConceptoDesc').value = "";
+                await cargarConceptos();
+                alert("Concepto guardado.");
+            } catch (error) { console.error(error); alert("Error al guardar concepto."); }
+        }
+
+        function renderizarListaConceptos() {
+            const contenedor = document.getElementById('listaConceptos');
+            contenedor.innerHTML = "";
+            const select = document.getElementById('selectConcepto');
+            Array.from(select.options).slice(1).forEach(opt => {
+                const div = document.createElement('div'); div.className = 'item-card';
+                div.innerHTML = `<span class="text-sm">${opt.dataset.descripcion}</span>`;
+                contenedor.appendChild(div);
+            });
+        }
+
+        async function cargarCuentaBancariaDefecto() {
+            try {
+                const snap = await getDoc(cuentaBancariaDocRef);
+                if (snap.exists()) {
+                    const c = snap.data();
+                    document.getElementById('selectBancos').value = c.banco || '';
+                    document.getElementById('bancoCuenta').value = c.cuenta || '';
+                    document.getElementById('bancoTitular').value = c.titular || '';
+                    document.getElementById('cfgCuentaBanco').value = c.banco || '';
+                    document.getElementById('cfgCuentaNumero').value = c.cuenta || '';
+                    document.getElementById('cfgCuentaTitular').value = c.titular || '';
+                }
+            } catch (error) { console.error("Error cargando cuenta bancaria:", error); }
+        }
+
+        window.guardarCuentaBancariaDefecto = async function() {
+            const banco = document.getElementById('cfgCuentaBanco').value;
+            const cuenta = document.getElementById('cfgCuentaNumero').value.trim();
+            const titular = document.getElementById('cfgCuentaTitular').value.trim();
+            try {
+                await setDoc(cuentaBancariaDocRef, { banco, cuenta, titular });
+                await cargarCuentaBancariaDefecto();
+                alert("Cuenta bancaria por defecto guardada.");
+            } catch (error) { console.error(error); alert("Error al guardar cuenta bancaria."); }
+        }
+
+        window.guardarCuentaCobro = async function() {
             const numFactura = document.getElementById('numCuentaCobro').value;
-            const docRef = doc(db, "settings", `factura_${numFactura}_${Date.now()}`);
-            
             const datos = {
                 fecha: document.getElementById('fechaActual').innerText,
                 numero_cuenta: numFactura,
@@ -349,89 +554,83 @@
                     entidad: document.getElementById('selectBancos').value,
                     cuenta: document.getElementById('bancoCuenta').value,
                     titular: document.getElementById('bancoTitular').value
-                }
+                },
+                creado: new Date().toISOString()
             };
-
             try {
-                await setDoc(docRef, datos);
-                alert("Cuenta de cobro almacenada en Firebase exitosamente.");
+                await addDoc(collection(db, "settings", "cuentas_cobro", "lista"), datos);
+                await avanzarConsecutivo();
+                alert("Cuenta de cobro guardada en Firebase y consecutivo avanzado.");
             } catch (error) {
-                console.error("Error al guardar datos:", error);
-                alert("Hubo un error al guardar los datos.");
+                console.error(error);
+                alert("Error al guardar la cuenta de cobro.");
             }
         }
 
-        // Inicialización
+        window.mostrarTab = function(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+        }
+
         cargarFecha();
         cargarBancos();
         cargarConsecutivo();
-
+        cargarClientes();
+        cargarConceptos();
+        cargarCuentaBancariaDefecto();
     </script>
 
-    <!-- Scripts locales para formateo y cálculos (Independientes de módulos) -->
     <script>
-        // Formateador de moneda colombiana
         function formatCOP(valor) {
-            return new Intl.NumberFormat('es-CO', { 
-                style: 'currency', 
+            return new Intl.NumberFormat('es-CO', {
+                style: 'currency',
                 currency: 'COP',
                 minimumFractionDigits: 0
             }).format(valor);
         }
 
-        // Quitar formato para cálculos matemáticos
         function cleanCOP(valor) {
             return parseFloat(valor.replace(/[^0-9]/g, '')) || 0;
         }
 
-        // Evento en el input para formatear mientras escribe y al salir
         function formatearMoneda(input) {
             let valorLimpio = cleanCOP(input.value);
-            if(valorLimpio === 0 && input.value === "") {
+            if (valorLimpio === 0 && input.value === "") {
                 input.value = "";
                 return;
             }
             input.value = formatCOP(valorLimpio);
-            
-            // Sincronizar el "Debe" con el "Precio Unitario" si está vacío, o actualizar total final
-            document.getElementById('totalFinalDisplay').innerText = document.getElementById('montoDebe').value;
         }
 
-        // Calcular Total del concepto
         function calcularTotal() {
             let cant = parseFloat(document.getElementById('conceptoCant').value) || 0;
             let precioUnit = cleanCOP(document.getElementById('conceptoPrecio').value);
             let total = cant * precioUnit;
-            
-            let totalFormateado = formatCOP(total);
-            document.getElementById('conceptoTotal').value = totalFormateado;
-            
-            // Sincronizar hacia arriba si lo desean o dejar independiente
-            if(document.getElementById('montoDebe').value === "" || document.getElementById('montoDebe').value === "$ 0") {
-                document.getElementById('montoDebe').value = totalFormateado;
-                document.getElementById('totalFinalDisplay').innerText = totalFormateado;
-            }
+            document.getElementById('conceptoTotal').value = formatCOP(total);
+            actualizarTotalFinal();
         }
 
-        // Generador de PDF
+        function actualizarTotalFinal() {
+            const montoDebe = document.getElementById('montoDebe').value;
+            const totalCalculado = document.getElementById('conceptoTotal').value;
+            document.getElementById('totalFinalDisplay').innerText = montoDebe || totalCalculado || "$ 0";
+        }
+
         function generarPDF() {
             const elemento = document.getElementById('documento-pdf');
             const num = document.getElementById('numCuentaCobro').value || 'S_N';
-            
             const opciones = {
-                margin:       0,
-                filename:     `Cuenta_Cobro_${num}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' }
+                margin: 0,
+                filename: `Cuenta_Cobro_${num}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
             };
-
-            // Remover bordes punteados (clases ghost) antes de imprimir para que se vea como un doc real
             const inputs = document.querySelectorAll('.input-ghost');
             inputs.forEach(i => i.style.border = 'none');
-
             html2pdf().set(opciones).from(elemento).save().then(() => {
-                // Restaurar bordes una vez descargado
                 inputs.forEach(i => i.style.border = '');
             });
         }
