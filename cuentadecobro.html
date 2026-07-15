@@ -281,7 +281,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-analytics.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCpVmdDTosviTAEnng2zYqzIqQMCurIG8c",
@@ -300,8 +300,8 @@
         const bancosDocRef = doc(db, "settings", "bancos_config");
         const consecutivoDocRef = doc(db, "settings", "consecutivo_config");
         const cuentaBancariaDocRef = doc(db, "settings", "cuenta_bancaria_default");
-        const clientesColRef = collection(db, "settings", "clientes", "lista");
-        const conceptosColRef = collection(db, "settings", "conceptos", "lista");
+        const clientesDocRef = doc(db, "settings", "clientes_config");
+        const conceptosDocRef = doc(db, "settings", "conceptos_config");
 
         let listaBancos = [
             "Bancolombia", "Banco de Bogotá", "Banco de Occidente", "Banco Popular",
@@ -402,15 +402,17 @@
             });
         }
 
+        let listaClientes = [];
+
         async function cargarClientes() {
             const select = document.getElementById('selectCliente');
             select.innerHTML = '<option value="">-- Seleccionar cliente --</option>';
             try {
-                const snap = await getDocs(clientesColRef);
-                snap.forEach(d => {
-                    const c = d.data();
+                const snap = await getDoc(clientesDocRef);
+                listaClientes = snap.exists() ? (snap.data().clientes || []) : [];
+                listaClientes.forEach((c, idx) => {
                     const opt = document.createElement('option');
-                    opt.value = d.id;
+                    opt.value = idx;
                     opt.innerText = c.nombre || 'Sin nombre';
                     opt.dataset.nombre = c.nombre || '';
                     opt.dataset.documento = c.documento || '';
@@ -439,7 +441,8 @@
             const telefono = document.getElementById('cfgCliTel').value.trim();
             if (!nombre) { alert("El nombre es obligatorio."); return; }
             try {
-                await addDoc(clientesColRef, { nombre, documento, direccion, telefono });
+                listaClientes.push({ id: idUnico(), nombre, documento, direccion, telefono });
+                await setDoc(clientesDocRef, { clientes: listaClientes });
                 document.getElementById('cfgCliNombre').value = "";
                 document.getElementById('cfgCliDoc').value = "";
                 document.getElementById('cfgCliDir').value = "";
@@ -460,15 +463,17 @@
             });
         }
 
+        let listaConceptos = [];
+
         async function cargarConceptos() {
             const select = document.getElementById('selectConcepto');
             select.innerHTML = '<option value="">-- Seleccionar concepto guardado --</option>';
             try {
-                const snap = await getDocs(conceptosColRef);
-                snap.forEach(d => {
-                    const c = d.data();
+                const snap = await getDoc(conceptosDocRef);
+                listaConceptos = snap.exists() ? (snap.data().conceptos || []) : [];
+                listaConceptos.forEach((c, idx) => {
                     const opt = document.createElement('option');
-                    opt.value = d.id;
+                    opt.value = idx;
                     opt.innerText = (c.descripcion || 'Sin descripción').substring(0, 60) + '...';
                     opt.dataset.descripcion = c.descripcion || '';
                     select.appendChild(opt);
@@ -488,7 +493,8 @@
             const descripcion = document.getElementById('cfgConceptoDesc').value.trim();
             if (!descripcion) { alert("La descripción es obligatoria."); return; }
             try {
-                await addDoc(conceptosColRef, { descripcion });
+                listaConceptos.push({ id: idUnico(), descripcion });
+                await setDoc(conceptosDocRef, { conceptos: listaConceptos });
                 document.getElementById('cfgConceptoDesc').value = "";
                 await cargarConceptos();
                 alert("Concepto guardado.");
@@ -558,7 +564,7 @@
                 creado: new Date().toISOString()
             };
             try {
-                await addDoc(collection(db, "settings", "cuentas_cobro", "lista"), datos);
+                await setDoc(doc(db, "settings", `cuenta_cobro_${Date.now()}`), datos);
                 await avanzarConsecutivo();
                 alert("Cuenta de cobro guardada en Firebase y consecutivo avanzado.");
             } catch (error) {
