@@ -973,68 +973,8 @@
         }
 
         async function generarPDFMobile(element, num) {
-            const opt = {
-                margin: 0,
-                filename: `Cuenta_Cobro_${num}.pdf`,
-                image: { type: 'jpeg', quality: 1.0 },
-                html2canvas: { 
-                    scale: 2, 
-                    useCORS: true, 
-                    width: 816,
-                    windowWidth: 816,
-                    logging: false,
-                    onclone: (clonedDoc) => {
-                        clonedDoc.body.classList.remove('mobile-mode');
-                        clonedDoc.body.style.background = 'white';
-                        clonedDoc.body.style.margin = '0';
-                        clonedDoc.body.style.padding = '0';
-
-                        const clone = clonedDoc.getElementById('documento-pdf');
-                        if (clone) {
-                            clone.style.width = '816px';
-                            clone.style.minHeight = '1056px';
-                            clone.style.padding = '40px';
-                            clone.style.margin = '0';
-                            clone.style.boxShadow = 'none';
-                            clone.style.transform = 'none';
-                            clone.style.background = 'white';
-                            clone.style.borderRadius = '0';
-
-                            clone.querySelectorAll('input, textarea, select').forEach(el => {
-                                const span = clonedDoc.createElement('span');
-                                span.className = el.className;
-                                span.style.display = 'inline-block';
-                                span.style.minHeight = '20px';
-                                span.style.lineHeight = 'inherit';
-                                let text = el.value;
-                                if (!text && el.tagName === 'SELECT' && el.selectedIndex >= 0) {
-                                    text = el.options[el.selectedIndex].text;
-                                }
-                                span.textContent = text || '';
-                                el.replaceWith(span);
-                            });
-
-                            clone.querySelectorAll('table').forEach(t => {
-                                t.style.borderCollapse = 'collapse';
-                                t.style.width = '100%';
-                            });
-                            clone.querySelectorAll('.input-ghost').forEach(el => {
-                                el.style.border = 'none';
-                                el.style.background = 'transparent';
-                                el.style.outline = 'none';
-                            });
-                        }
-                    }
-                },
-                jsPDF: { unit: 'px', format: [816, 1056], hotfixes: ['px_scaling'] }
-            };
-
-            try {
-                await html2pdf().set(opt).from(element).save();
-            } catch (err) {
-                console.error('PDF Error:', err);
-                alert('Error al generar PDF');
-            }
+            // Usar la misma estrategia de iframe que en PC
+            await generarPDFDesktop(element, num);
         }
     </script>
 </body>
