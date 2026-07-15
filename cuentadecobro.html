@@ -9,40 +9,108 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
         * { box-sizing: border-box; }
 
+        :root {
+            --primary: #0f4c81;
+            --primary-light: #1e6ea3;
+            --accent: #00a8b5;
+            --bg-soft: #f4f7fb;
+            --text: #1e293b;
+            --muted: #64748b;
+            --border: #e2e8f0;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0f9ff;
-            color: #1e293b;
+            background-color: var(--bg-soft);
+            color: var(--text);
         }
 
         #documento-pdf {
             width: 215.9mm;
             min-height: 279.4mm;
-            background-color: white;
+            background: #ffffff;
             margin: 0 auto;
-            padding: 20mm;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            padding: 22mm 24mm;
+            box-shadow: 0 20px 40px -12px rgba(15, 76, 129, 0.18);
+            border-radius: 4px;
             position: relative;
+        }
+
+        .doc-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 24px;
+            margin-bottom: 28px;
+            border-bottom: 1.5px solid var(--primary);
+        }
+
+        .doc-header .brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .doc-header .logo {
+            width: 76px;
+            height: 76px;
+            object-fit: contain;
+        }
+
+        .doc-header .company-name {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: -0.3px;
+            line-height: 1.2;
+        }
+
+        .doc-header .company-info {
+            font-size: 0.82rem;
+            color: var(--muted);
+            line-height: 1.45;
+            margin-top: 4px;
+        }
+
+        .doc-title-box {
+            text-align: right;
+        }
+
+        .doc-title-box h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .doc-title-box .doc-date {
+            font-size: 0.9rem;
+            color: var(--muted);
+            font-weight: 500;
         }
 
         .input-ghost {
             width: 100%;
             background: transparent;
             border: 1px dashed transparent;
+            border-radius: 0;
             outline: none;
             transition: all 0.2s;
             color: inherit;
             font-family: inherit;
             font-size: inherit;
+            min-height: 28px;
         }
 
         .input-ghost:focus, .input-ghost:hover {
-            border-bottom: 1px dashed #38bdf8;
-            background-color: #f0f9ff;
+            border-bottom: 1px dashed var(--accent);
+            background-color: rgba(0, 168, 181, 0.04);
         }
 
         select.input-ghost {
@@ -50,46 +118,144 @@
             padding-right: 24px;
         }
 
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        textarea.input-ghost {
+            resize: none;
+            overflow: hidden;
+            min-height: 28px;
+            line-height: 1.45;
+            padding: 2px 0;
+        }
+
+        .quick-fill {
+            position: fixed;
+            top: 22px;
+            left: 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 50;
+            width: 260px;
+        }
+
+        .quick-fill select {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-size: 0.85rem;
+            color: var(--text);
+            box-shadow: 0 2px 8px rgba(15, 76, 129, 0.06);
+        }
+
+        .quick-fill select:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .quick-fill label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--muted);
+            font-weight: 600;
+            margin-bottom: -4px;
+        }
+
+        td { vertical-align: top; }
+        td .field-row + .field-row { margin-top: 6px; }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-bottom: 22px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(15, 76, 129, 0.06);
+        }
 
         th {
-            background-color: #e0f2fe;
-            color: #0369a1;
+            background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+            color: var(--primary);
             font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
             text-align: left;
-            padding: 10px;
-            border: 1px solid #bae6fd;
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            border-bottom: 2px solid var(--primary);
         }
 
         td {
-            padding: 10px;
-            border: 1px solid #bae6fd;
+            padding: 12px 14px;
+            border: 1px solid var(--border);
             vertical-align: top;
+            background: #fff;
+        }
+
+        .bank-box {
+            margin-top: 28px;
+            background: #f8fafc;
+            border-left: 4px solid var(--accent);
+            border-radius: 8px;
+            padding: 18px 20px;
+        }
+
+        .bank-box h3 {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--muted);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .bank-box .note-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 12px;
+        }
+
+        .total-final {
+            margin-top: 32px;
+            text-align: right;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .total-final span {
+            color: var(--muted);
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-right: 8px;
         }
 
         @media print {
             .no-print { display: none !important; }
-            #documento-pdf { box-shadow: none; margin: 0; padding: 0; }
+            #documento-pdf { box-shadow: none; margin: 0; padding: 18mm 22mm; border-radius: 0; }
             body { background-color: white; }
         }
 
         dialog {
             border: none;
-            border-radius: 12px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border-radius: 16px;
+            box-shadow: 0 24px 50px -12px rgba(15, 23, 42, 0.25);
             padding: 0;
             width: 100%;
             max-width: 800px;
-            max-height: 90vh;
+            max-height: 92vh;
         }
         dialog::backdrop {
-            background: rgba(15, 23, 42, 0.5);
-            backdrop-filter: blur(4px);
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(5px);
         }
 
         .tab-btn.active {
-            border-bottom: 2px solid #0ea5e9;
-            color: #0284c7;
+            border-bottom: 2.5px solid var(--accent);
+            color: var(--primary);
             font-weight: 600;
         }
 
@@ -98,40 +264,58 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px 10px;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            margin-bottom: 6px;
-            background: #f8fafc;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            background: #fff;
+            transition: background 0.15s;
         }
-        .item-card:hover { background: #e0f2fe; }
+        .item-card:hover { background: #f0f9ff; }
     </style>
 </head>
 <body class="p-6">
 
-    <div class="no-print fixed top-6 right-6 flex gap-4 z-50">
-        <button onclick="document.getElementById('configModal').showModal()" class="bg-white text-sky-600 hover:bg-sky-50 px-4 py-2 rounded-lg shadow border border-sky-200 transition">
+    <div class="no-print fixed top-5 right-5 flex gap-3 z-50 items-center">
+        <img src="logo.png" alt="Logo" class="h-10 w-auto object-contain bg-white rounded-lg shadow-sm border border-slate-200 p-1">
+        <button onclick="document.getElementById('configModal').showModal()" class="bg-white text-slate-700 hover:text-[var(--primary)] hover:border-[var(--primary)] px-4 py-2 rounded-xl shadow-sm border border-slate-200 transition text-sm font-medium">
             <i class="fas fa-cog mr-2"></i>Configuración
         </button>
-        <button onclick="guardarCuentaCobro()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg shadow transition">
+        <button onclick="guardarCuentaCobro()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-xl shadow-sm transition text-sm font-medium">
             <i class="fas fa-cloud-upload-alt mr-2"></i>Guardar y avanzar
         </button>
-        <button onclick="generarPDF()" class="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg shadow transition">
+        <button onclick="generarPDF()" class="bg-[var(--primary)] hover:bg-[var(--primary-light)] text-white px-4 py-2 rounded-xl shadow-sm transition text-sm font-medium">
             <i class="fas fa-file-pdf mr-2"></i>Imprimir PDF
         </button>
     </div>
 
+    <div class="no-print quick-fill">
+        <label for="selectCliente">Llenar rápido cliente</label>
+        <select id="selectCliente" onchange="cargarClienteSeleccionado()">
+            <option value="">-- Seleccionar cliente --</option>
+        </select>
+        <label for="selectConcepto">Llenar rápido concepto</label>
+        <select id="selectConcepto" onchange="cargarConceptoSeleccionado()">
+            <option value="">-- Seleccionar concepto guardado --</option>
+        </select>
+    </div>
+
     <div id="documento-pdf">
-        <div class="flex justify-between items-start mb-8">
-            <div class="text-sm leading-relaxed text-gray-700">
-                <p class="font-bold text-gray-900">GRUPO CONSULTOR C&amp;C</p>
-                <p>CALLE 68B  23AB-38 T4 APTO 102 MONTEBIANCO</p>
-                <p>3154967667</p>
-                <p>GIRON - SANTANDER</p>
+        <div class="doc-header">
+            <div class="brand">
+                <img src="logo.png" alt="Logo" class="logo">
+                <div>
+                    <div class="company-name">ANDERSON DAMIAN CASTRO BAYONA</div>
+                    <div class="company-info">
+                        CALLE 68B 23AB-38 T4 APTO 102 MONTEBIANCO<br>
+                        3154967667<br>
+                        GIRON - SANTANDER
+                    </div>
+                </div>
             </div>
-            <div class="text-right">
-                <h1 class="text-2xl font-bold text-sky-800 uppercase tracking-wider mb-2">Cuenta de cobro</h1>
-                <p id="fechaActual" class="text-gray-600 font-medium"></p>
+            <div class="doc-title-box">
+                <h1>Cuenta de cobro</h1>
+                <p id="fechaActual" class="doc-date"></p>
             </div>
         </div>
 
@@ -146,13 +330,10 @@
             <tbody>
                 <tr>
                     <td>
-                        <select id="selectCliente" class="input-ghost font-bold mb-1 no-print" onchange="cargarClienteSeleccionado()">
-                            <option value="">-- Seleccionar cliente --</option>
-                        </select>
-                        <input type="text" id="dirigidoNombre" class="input-ghost font-bold mb-1" placeholder="Nombre completo">
-                        <input type="text" id="dirigidoDoc" class="input-ghost mb-1" placeholder="Documento">
-                        <input type="text" id="dirigidoDir" class="input-ghost mb-1" placeholder="Dirección">
-                        <input type="text" id="dirigidoTel" class="input-ghost" placeholder="Número / Celular">
+                        <div class="field-row"><input type="text" id="dirigidoNombre" class="input-ghost font-bold" placeholder="Nombre completo"></div>
+                        <div class="field-row"><input type="text" id="dirigidoDoc" class="input-ghost" placeholder="Documento"></div>
+                        <div class="field-row"><textarea id="dirigidoDir" class="input-ghost auto-textarea" rows="1" placeholder="Dirección" oninput="ajustarTextarea(this)"></textarea></div>
+                        <div class="field-row"><input type="text" id="dirigidoTel" class="input-ghost" placeholder="Número / Celular"></div>
                     </td>
                     <td class="align-middle text-center">
                         <input type="text" id="montoDebe" class="input-ghost text-2xl font-bold text-center text-sky-900" placeholder="$ 0" oninput="formatearMoneda(this); actualizarTotalFinal()">
@@ -176,10 +357,7 @@
             <tbody>
                 <tr>
                     <td>
-                        <select id="selectConcepto" class="input-ghost font-bold mb-1 no-print w-full" onchange="cargarConceptoSeleccionado()">
-                            <option value="">-- Seleccionar concepto guardado --</option>
-                        </select>
-                        <textarea id="conceptoDesc" class="input-ghost w-full resize-none" rows="3" placeholder="Descripción del servicio..."></textarea>
+                        <textarea id="conceptoDesc" class="input-ghost w-full auto-textarea" rows="2" placeholder="Descripción del servicio..." oninput="ajustarTextarea(this)"></textarea>
                     </td>
                     <td class="text-center align-middle">
                         <input type="number" id="conceptoCant" class="input-ghost text-center" value="1" min="1" oninput="calcularTotal()">
@@ -194,11 +372,11 @@
             </tbody>
         </table>
 
-        <div class="mt-12 bg-sky-50 border border-sky-100 p-4 rounded-lg">
-            <h3 class="font-bold text-sky-800 mb-2">Notas:</h3>
-            <p class="text-sm font-semibold mb-2">CUENTAS BANCARIAS PARA PAGO POR TRANSFERENCIA</p>
+        <div class="bank-box">
+            <h3>Información de pago</h3>
+            <div class="note-title">CUENTAS BANCARIAS PARA PAGO POR TRANSFERENCIA</div>
             <div class="flex gap-4 items-center mb-2">
-                <select id="selectBancos" class="input-ghost font-bold text-sky-900 w-auto bg-transparent border-b border-sky-300">
+                <select id="selectBancos" class="input-ghost font-bold text-[var(--primary)] w-auto bg-transparent border-b border-[var(--border)]">
                     <option value="">-- Banco --</option>
                 </select>
                 <input type="text" id="bancoCuenta" class="input-ghost font-bold flex-1" placeholder="Número de cuenta">
@@ -206,8 +384,8 @@
             <input type="text" id="bancoTitular" class="input-ghost text-sm" placeholder="Nombre del titular de la cuenta">
         </div>
 
-        <div class="mt-16 text-right font-bold text-xl text-sky-900" id="totalFinalDisplay">
-            $ 0
+        <div class="total-final" id="totalFinalDisplay">
+            <span>Total:</span> $ 0
         </div>
     </div>
 
@@ -432,6 +610,8 @@
             document.getElementById('dirigidoDoc').value = opt.dataset.documento || '';
             document.getElementById('dirigidoDir').value = opt.dataset.direccion || '';
             document.getElementById('dirigidoTel').value = opt.dataset.telefono || '';
+            ajustarTextarea(document.getElementById('dirigidoDir'));
+            select.value = "";
         }
 
         window.agregarCliente = async function() {
@@ -487,6 +667,8 @@
             const opt = select.options[select.selectedIndex];
             if (!opt.value) return;
             document.getElementById('conceptoDesc').value = opt.dataset.descripcion || '';
+            ajustarTextarea(document.getElementById('conceptoDesc'));
+            select.value = "";
         }
 
         window.agregarConcepto = async function() {
@@ -621,7 +803,13 @@
         function actualizarTotalFinal() {
             const montoDebe = document.getElementById('montoDebe').value;
             const totalCalculado = document.getElementById('conceptoTotal').value;
-            document.getElementById('totalFinalDisplay').innerText = montoDebe || totalCalculado || "$ 0";
+            const display = document.getElementById('totalFinalDisplay');
+            display.innerHTML = `<span>Total:</span> ${montoDebe || totalCalculado || "$ 0"}`;
+        }
+
+        function ajustarTextarea(ta) {
+            ta.style.height = 'auto';
+            ta.style.height = ta.scrollHeight + 'px';
         }
 
         function generarPDF() {
